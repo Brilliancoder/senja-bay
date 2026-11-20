@@ -385,6 +385,29 @@ const wallSignTex=canvasTex(512,128,(g)=>{ g.fillStyle='#3a2a1a'; g.fillRect(0,0
 const wallSign=new THREE.Mesh(new THREE.PlaneGeometry(7.5,2.2),new THREE.MeshBasicMaterial({map:wallSignTex})); wallSign.position.set(-133.8,4.6,129.6); garageProps.add(wallSign);
 garageProps.visible=false; scene.add(garageProps);
 const GARAGE={x:-125,z:120};
+// collision solids: 16 grid buildings + garage + 4 mid-distance buildings inside bounds
+const SOLIDS=[];
+for(let gx=0;gx<4;gx++)for(let gz=0;gz<4;gz++){
+  const bx=-75+gx*50,bz=-90+gz*60,seed=gx*3+gz*5;
+  const w=22+((seed*3)%8),d=20+((seed*5)%10);
+  SOLIDS.push({x:bx,z:bz,hw:w/2,hd:d/2});
+}
+SOLIDS.push({x:-125,z:120,hw:12,hd:9});
+for(let j=0;j<4;j++){
+  const mx=-130+j*30,mz=-180+j*18,mw=(20+j*4)/2,md=9;
+  SOLIDS.push({x:mx,z:mz,hw:mw,hd:md});
+}
+function resolveAABB(x,z,r){
+  for(const b of SOLIDS){
+    const dx=x-b.x,dz=z-b.z,hw=b.hw+r,hd=b.hd+r;
+    if(Math.abs(dx)<hw&&Math.abs(dz)<hd){
+      const ox=hw-Math.abs(dx),oz=hd-Math.abs(dz);
+      if(ox<oz) return{x:x+(dx>0?ox:-ox),z};
+      else return{x,z:z+(dz>0?oz:-oz)};
+    }
+  }
+  return{x,z};
+}
 // pier / boat at east end of boulevard (50, -130)
 const boat=new THREE.Group();
 const hull=new THREE.Mesh(new THREE.BoxGeometry(10,2,4),groundMat(0xffffff)); hull.position.y=1; boat.add(hull);
@@ -1146,7 +1169,7 @@ try{ const cubeRT=new THREE.WebGLCubeRenderTarget(128); const cubeCam=new THREE.
 // ---------- MAIN LOOP ----------
 const mm=document.getElementById('minimap').getContext('2d');
 // v7 runtime: nitro meter, drift chain, crash cooldown, explosion shake/flash
-let nitro=100, nitroActive=false, driftChain=0, curDrifting=false, crashCd=0, shakeT=0, shakeMag=0, boomFlashT=0, driftGrace=0, heliLockT=0;
+let nitro=100, nitroActive=false, driftChain=0, curDrifting=false, crashCd=0, shakeT=0, shakeMag=0, boomFlashT=0, driftGrace=0, heliLockT=0, autoStuckT=0, autoStuckAcc=0;
 function drawMinimap(){
   mm.clearRect(0,0,340,340); mm.fillStyle='#0e2a3a'; mm.beginPath(); mm.arc(170,170,168,0,7); mm.fill(); mm.save(); mm.clip();
   mm.strokeStyle='#8a8a9a'; mm.lineWidth=10;
@@ -1270,6 +1293,7 @@ function loop(now){
     if(keys['w']||keys['arrowup']) mz-=1; if(keys['s']||keys['arrowdown']) mz+=1;
     if(keys['a']||keys['arrowleft']) mx-=1; if(keys['d']||keys['arrowright']) mx+=1;
     if(mx||mz){ const l=Math.hypot(mx,mz); wx+=mx/l*sp*dt; wz+=mz/l*sp*dt; wHeading=Math.atan2(mx,mz); }
+    const wr=resolveAABB(wx,wz,0.8); wx=wr.x; wz=wr.z;
     walker.position.set(wx,0,wz); walker.rotation.y=wHeading;
     updateCarShadow(walker,wHeading,4); updateCarShadow(playerCar,heading,11);
     const wSwing=(mx||mz)?Math.sin(elapsed*10)*0.55:0;
@@ -1281,20 +1305,36 @@ function loop(now){
     if(wantNitro && nitro>0){ nitroActive=true; nitro=Math.max(0,nitro-30*dt); }
     else { nitroActive=false; nitro=Math.min(100,nitro+12*dt); }
     const topSpeed=nitroActive?45:31;
-    if(keys['w']||keys['arrowup']||auto) speed=Math.min(speed+(nitroActive?34:22)*dt,topSpeed);
+    if(autoStuckT>0){ speed=Math.max(speed-30*dt,-8); autoStuckT-=dt; }
+    else if(keys['w']||keys['arrowup']||auto) speed=Math.min(speed+(nitroActive?34:22)*dt,topSpeed);
     else if(keys['s']||keys['arrowdown']) speed=Math.max(speed-30*dt,-8);
     else speed*=Math.pow(0.4,dt);
     if(keys[' ']) speed*=Math.pow(0.05,dt);
     const steer=((keys['a']||keys['arrowleft'])?1:0)-((keys['d']||keys['arrowright'])?1:0);
     if(auto){
+      if(autoStuckT>0){ heading+=1.4*dt; } // reversing out of a wall: turn away
+      else {
       // auto-drive steers toward the current mission checkpoint (not just the x=50 lane)
       const cp=curCheckpoint();
       const want=Math.atan2(cp.x-px, cp.z-pz);
       const diff=((want-heading+Math.PI*3)%(Math.PI*2))-Math.PI;
       heading+=Math.max(-1.4*dt,Math.min(1.4*dt,diff));
+      }
     }
     else heading+=(steer*1.4)*dt*Math.min(1,Math.abs(speed)/8+0.2)*(speed>=0?1:-1);
+    const preX=px, preZ=pz;
     px+=Math.sin(heading)*speed*dt; pz+=Math.cos(heading)*speed*dt;
+    const oldPx=px,oldPz=pz;
+    const cr=resolveAABB(px,pz,2.2); px=cr.x; pz=cr.z;
+    if(auto && autoStuckT<=0){
+      const moved=Math.hypot(px-preX,pz-preZ);
+      if(Math.abs(speed)>5 && moved<Math.abs(speed)*dt*0.3){ autoStuckAcc+=dt; if(autoStuckAcc>0.5){ autoStuckT=1.2; autoStuckAcc=0; } }
+      else autoStuckAcc=0;
+    }
+    if((px!==oldPx||pz!==oldPz)&&Math.abs(speed)>8){
+      speed*=0.4; S.condition=Math.max(0,S.condition-2);
+      floatText('💥 WALL -2% CONDITION'); shakeT=0.35; shakeMag=0.5;
+    }
     if(px<-140||px>150){heading=Math.PI-heading; px=Math.max(-140,Math.min(150,px));}
     if(pz<-150||pz>150){heading=-heading; pz=Math.max(-150,Math.min(150,pz));}
     if(Math.abs(speed)>22 && steer!==0){ driftT+=dt; curDrifting=true; driftGrace=1.5; if(driftT>2.5){ driftT=0; const mult=driftChain+1; S.money+=50*mult; floatText('DRIFT x'+mult+' +$'+(50*mult)); driftChain=Math.min(4,driftChain+1); } } else if(driftGrace>0){ driftGrace-=dt; curDrifting=false; } else { driftT=0; driftChain=0; curDrifting=false; }
@@ -1339,9 +1379,21 @@ function loop(now){
     c.rotation.y+=((ang-c.rotation.y+Math.PI*3)%(Math.PI*2)-Math.PI)*dt*2;
     c.position.x+=Math.sin(c.rotation.y)*spd*dt;
     c.position.z+=Math.cos(c.rotation.y)*spd*dt;
+    const pr=resolveAABB(c.position.x,c.position.z,2.2);
+    c.position.x=pr.x; c.position.z=pr.z;
     c.userData.spinAngle+=c.userData.speed*dt/0.42;
     c.userData.spin.forEach(m=>{ m.rotation.x=c.userData.spinAngle; });
     updateCarShadow(c,c.rotation.y,11);
+    // circle collision with player car — separation runs every frame; only damage is cooldown-gated
+    if(!onFoot){
+      const pd=Math.hypot(c.position.x-px,c.position.z-pz);
+      if(pd<4.6){
+        const overlap=4.6-pd;
+        const dx=px-c.position.x,dz=pz-c.position.z,d=Math.hypot(dx,dz);
+        if(d>0.01){ px+=dx/d*overlap; pz+=dz/d*overlap; }
+        if(crashCd<=0&&Math.abs(speed)>5){ speed*=0.5; const dmg=S.armourOwned?2:3; S.condition=Math.max(0,S.condition-dmg); floatText('💥 CRASH -'+dmg+'% CONDITION'); crashCd=1.2; shakeT=0.3; shakeMag=0.4; }
+      }
+    }
     if(c.userData.lights){const on=Math.floor(elapsed*6+i)%2===0; c.userData.lights[0].material.color.setHex(on?0xff2222:0x550000); c.userData.lights[1].material.color.setHex(on?0x000055:0x2244ff); if(c.userData.glow){ c.userData.glow[0].material.opacity=on?0.9:0.08; c.userData.glow[1].material.opacity=on?0.08:0.9; }}
     // police fire: FIRING units shoot from range on their own timer, others share the close-range timer
     const d=Math.hypot(dx,dz);
@@ -1365,24 +1417,38 @@ function loop(now){
   });
   traffic.forEach(c=>{
     const dir=c.rotation.y===0?1:-1;
-    c.position.z+=dir*c.userData.speed*dt;
+    let tspd=c.userData.speed;
+    if(!onFoot&&Math.abs(speed)<6){
+      const ahead=(dir>0?pz>c.position.z:pz<c.position.z)&&Math.abs(pz-c.position.z)<10&&Math.abs(px-c.position.x)<3;
+      if(ahead) tspd=0;
+    }
+    c.position.z+=dir*tspd*dt;
     if(c.position.z>150)c.position.z=-150; if(c.position.z<-150)c.position.z=150;
-    c.userData.spinAngle+=c.userData.speed*dt/0.42;
+    c.userData.spinAngle+=tspd*dt/0.42;
     c.userData.spin.forEach(m=>{ m.rotation.x=c.userData.spinAngle; });
     updateCarShadow(c,c.rotation.y,11);
-    // near-miss bonus + crash damage (only while driving)
+    // near-miss bonus + crash damage (only while driving) — separation runs every frame; only damage is cooldown-gated
     if(!onFoot){
       const pd=Math.hypot(c.position.x-px,c.position.z-pz);
+      if(pd<4.6){
+        const overlap=4.6-pd;
+        const dx=px-c.position.x,dz=pz-c.position.z,d=Math.hypot(dx,dz);
+        if(d>0.01){ px+=dx/d*overlap; pz+=dz/d*overlap; }
+        if(crashCd<=0&&Math.abs(speed)>5){ speed*=0.5; const dmg=S.armourOwned?2:3; S.condition=Math.max(0,S.condition-dmg); floatText('💥 CRASH -'+dmg+'% CONDITION'); crashCd=1.2; shakeT=0.3; shakeMag=0.4; }
+      }
       if(pd>2.3 && pd<4.0 && Math.abs(speed)>15 && (c.userData.nmCd||0)<=0){ c.userData.nmCd=3; S.money+=100; floatText('NEAR MISS +$100'); }
-      if(pd<=2.3 && Math.abs(speed)>10 && (c.userData.crashCd||0)<=0){ c.userData.crashCd=1.5; const dmg=S.armourOwned?2:3; S.condition=Math.max(0,S.condition-dmg); speed*=0.7; floatText('💥 CRASH -'+dmg+'% CONDITION'); }
     }
-    if(c.userData.nmCd>0) c.userData.nmCd-=dt; if(c.userData.crashCd>0) c.userData.crashCd-=dt;
+    if(c.userData.nmCd>0) c.userData.nmCd-=dt;
   });
   // player car wrecked by crashes: explosion + mission fail, car towed back at 60%
   if(S.condition<=0){ spawnExplosion(px,pz,true); S.condition=60; speed=0; failMission('The Arunika is wrecked — Bara towed it back'); }
   // pedestrians flee from Raka in the on-foot combat staging (but only a few steps, so they stay in frame)
   peds.forEach(p=>{
     if(SHOT==='onfoot-combat'){ const dx=p.position.x-wx, dz=p.position.z-wz, d=Math.hypot(dx,dz); if(d<10 && d>0.1){ p.position.x+=dx/d*2*dt; p.position.z+=dz/d*2*dt; } return; }
+    if(!onFoot&&Math.abs(speed)>10){
+      const dx=p.position.x-px,dz=p.position.z-pz,d=Math.hypot(dx,dz);
+      if(d<8&&d>0.1){ p.position.x+=dx/d*4*dt; p.position.z+=dz/d*4*dt; return; }
+    }
     p.position.x+=p.userData.dir*p.userData.speed*dt; if(p.position.x>90)p.userData.dir=-1; if(p.position.x<-120)p.userData.dir=1;
   });
   // heli circles off to the side of the road so its searchlight cone never sits dead-centre in the chase camera
