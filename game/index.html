@@ -1163,9 +1163,9 @@ const explosions=[];
 function spawnExplosion(x,z,big,quiet){
   sfxBoom();
   const g=new THREE.Group();
-  const fb=[], fbBase=[5,8,12];
+  const fb=[], fbBase=[5,7,10];
   [0xffd23f,0xff7a18,0xff3d00].forEach((col,i)=>{
-    const s=new THREE.Sprite(new THREE.SpriteMaterial({map:glowTex,color:col,transparent:true,opacity:0.95,depthWrite:false}));
+    const s=new THREE.Sprite(new THREE.SpriteMaterial({map:glowTex,color:col,transparent:true,opacity:0.95,blending:THREE.AdditiveBlending,depthWrite:false}));
     s.position.y=1.2+i*0.4; s.scale.set(fbBase[i],fbBase[i],1); g.add(s); fb.push(s);
   });
   // bright white-yellow ignition flash — the first thing the eye sees at thumbnail size (v10)
@@ -1175,12 +1175,12 @@ function spawnExplosion(x,z,big,quiet){
   core.position.y=1.4; core.scale.set(6,6,1); g.add(core);
   const sm=[];
   for(let i=0;i<5;i++){
-    const s=new THREE.Sprite(new THREE.SpriteMaterial({map:glowTex,color:0x181818,transparent:true,opacity:0.55,depthWrite:false}));
-    s.position.set((Math.random()-0.5)*4,2.5+Math.random()*2.5,(Math.random()-0.5)*4);
-    const sc=2+Math.random()*1.5; s.scale.set(sc,sc,1); g.add(s); sm.push(s);
+    const s=new THREE.Sprite(new THREE.SpriteMaterial({map:glowTex,color:0x181818,transparent:true,opacity:0.35,depthWrite:false}));
+    s.position.set((Math.random()-0.5)*4,3.4+Math.random()*2.0,(Math.random()-0.5)*4);
+    const sc=1.6+Math.random()*1.2; s.scale.set(sc,sc,1); g.add(s); sm.push(s);
   }
   g.position.set(x,0,z); scene.add(g);
-  explosions.push({g,fb,fbBase,sm,ig,t:0,life:big?3.0:2.5});
+  explosions.push({g,fb,fbBase,sm,ig,core,t:0,life:big?3.0:2.5});
   if(!quiet){ boomFlashT=0.5; document.getElementById('boomflash').style.opacity='0.55'; shakeT=0.6; shakeMag=big?1.2:0.8; }
   if(explosions.length>4){ const old=explosions.shift(); scene.remove(old.g); }
 }
@@ -1615,8 +1615,9 @@ function loop(now){
   // explosion animation: fireballs expand + fade, smoke rises + thins
   explosions.forEach(ex=>{ ex.t+=dt;
     if(ex.ig){ const isc=14*(1+ex.t*0.8); ex.ig.scale.set(isc,isc,1); ex.ig.material.opacity=Math.max(0,1-ex.t/1.2); }
-    ex.fb.forEach((s,i)=>{ const sc=ex.fbBase[i]*(1+ex.t*1.2); s.scale.set(sc,sc,1); s.material.opacity=Math.max(0,0.95*(1-ex.t/2.2)); });
-    ex.sm.forEach((s,i)=>{ s.position.y+=dt*2.2; s.position.x+=Math.sin(ex.t*2+i)*dt*0.5; s.material.opacity=Math.max(0,0.55*(1-Math.max(0,ex.t-0.8)/1.4)); });
+    if(ex.core){ const csc=6*(1+ex.t*0.5); ex.core.scale.set(csc,csc,1); ex.core.material.opacity=Math.max(0,1-ex.t/0.9); }
+    ex.fb.forEach((s,i)=>{ const sc=ex.fbBase[i]*(1+ex.t*0.8); s.scale.set(sc,sc,1); s.material.opacity=Math.max(0,0.95*(1-ex.t/1.8)); });
+    ex.sm.forEach((s,i)=>{ s.position.y+=dt*2.2; s.position.x+=Math.sin(ex.t*2+i)*dt*0.5; s.material.opacity=Math.max(0,0.35*(1-Math.max(0,ex.t-0.8)/1.4)); });
   });
   for(let i=explosions.length-1;i>=0;i--){ if(explosions[i].t>explosions[i].life){ scene.remove(explosions[i].g); explosions.splice(i,1); } }
   if(boomFlashT>0){ boomFlashT-=dt; document.getElementById('boomflash').style.opacity=Math.max(0,boomFlashT*1.1).toFixed(2); }
