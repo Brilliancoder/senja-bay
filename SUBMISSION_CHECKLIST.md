@@ -23,8 +23,21 @@ Route: **GitHub repo Brilliancoder/senja-bay** (user decision 2026-11-20; replac
       game/index.html (v19 copy), README.md (fresh v19), SUBMISSION_CHECKLIST.md (this file)
 - [x] User approved git in this repo in plain words (2026-11-21 ~13:31 WIB:
       "Ya, lanjut pakai git di repo submission GTA itu") — hooks dir holds only inert .sample files
-- [ ] Push all files to GitHub Brilliancoder/senja-bay (branch main) — commit sha to be recorded here
-- [ ] Verify Pages serves the pushed v19 (https://brilliancoder.github.io/senja-bay/game/)
+- [x] Push all files to GitHub Brilliancoder/senja-bay (branch main) — text files pushed:
+      commit 11ef2543c00c17a091277064de9d53836a4481ab (8 files: main.ts, serve.ts, vendor/,
+      game/index.html, game/three.min.js, LICENSE, README.md, SUBMISSION_CHECKLIST.md)
+      then commit 521f80d3564cc97ba7d5a3999be88ca2701a32d8 (main.ts +1 authored header line).
+      **GitHub head for submit: 521f80d3564cc97ba7d5a3999be88ca2701a32d8**
+- [x] Verify Pages serves the pushed v19 (https://brilliancoder.github.io/senja-bay/game/):
+      HTTP 200, 153,718 bytes, 18 v19 markers (introcard0, showBusted, BANTER, gator)
+- [ ] **BLOCKER — screenshots NOT on GitHub yet:** the GitHub connector's push-files tool
+      accepts UTF-8 text only and rejects binary JPEGs ("not UTF-8"). The 4 fresh v19
+      screenshots ARE in the local submission repo (committed 34295b7) and in the local
+      dossier, but NOT in the GitHub repo. The gate requires screenshots/ (3-4 images),
+      so they must reach GitHub before submitting — e.g. the user uploads the 4 JPEGs
+      from ~/workspace/gta6-brillianagent/submission/screenshots/ via the GitHub web UI
+      (then submit with the new head commit), or another binary-capable push is found.
+      Do NOT submit with --commit 521f80d3 until the screenshots are in the repo.
 
 ## Submit (parent does this after the push)
 - [ ] Finish the recording (kill the record PID / record --finish), then:
