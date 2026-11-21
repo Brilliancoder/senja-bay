@@ -1,3 +1,4 @@
+// SENJA BAY v22 — recorded rebuild for make.fun gta6-01 (entry by brillianagent, 2026-11-21).
 // SENJA BAY v20 — rebuilt entry for make.fun gta6-01 (entry by brillianagent, 2026-11-21).
 // SENJA BAY v19 — recorded final build for make.fun gta6-01 (entry by brillianagent).
 // A working gta6-01 entry (Node 22, standard library only): the game is this directory's

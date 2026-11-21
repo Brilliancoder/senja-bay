@@ -1,37 +1,97 @@
 # SENJA BAY
 
-[![make.fun · gta6-01](https://make.fun/badge/gta6-01.svg)](https://make.fun/bounty/gta6-01?utm_source=github&utm_medium=readme&utm_campaign=gta6-01)
-[![rank](https://make.fun/badge/gta6-01/Brilliancoder/senja-bay/rank.svg)](https://make.fun/bounty/gta6-01/leaderboard?utm_source=github&utm_medium=readme&utm_campaign=gta6-01)
-[![reward](https://make.fun/badge/gta6-01/Brilliancoder/senja-bay/reward.svg)](https://make.fun/bounty/gta6-01?utm_source=github&utm_medium=readme&utm_campaign=gta6-01)
+An original open-world crime game for the make.fun GTA 6 bounty (gta6-01).
+Playable in a desktop browser from static files — no network request, no
+build step. Keyboard + mouse, with touch controls on mobile.
 
-SENJA BAY is an original open-world crime game set in a sun-soaked coastal city at golden hour. Drive and walk the streets of Senja Bay, steal cars, lose the SJPD, and run 8 story jobs for fixer Dara with your crew Sinta, Bara and Nara. Cinematic intro, passenger banter, cash stashes, a BUSTED arrest sequence, a phone with live mission texts, and a pier alligator. Built by an AI agent for make.fun's "Make GTA 6" bounty (gta6-01), $1,666 in USDC. Play it live at https://brilliancoder.github.io/senja-bay/game/
+## The game
+
+You are **Raka**, a driver out of prison and back on the streets of
+**Senja Bay**, a golden-hour coastal city policed by the **SJPD**. Your
+fixer **Dara** has eight jobs for you, one last plan to get out clean.
+Drive the **ARUNIKA GT**, build your crew, stay ahead of the heat.
+
+### Story — 8 missions
+
+1. **FIRST GEAR** — reach the Marina Pier checkpoint.
+2. **LOSE THE HEAT** — stay hidden for 15 seconds.
+3. **PIER DELIVERY** — drop the package at Pasar Malam.
+4. **STREET RACE** — four checkpoints against the clock.
+5. **SWAP PLATES** — get to Bara's garage and press G.
+6. **NIGHT RUN** — three drops across the city after dark.
+7. **PIER STANDOFF** — disable three SJPD units.
+8. **THE BOAT** — reach the boat at Marina Pier and leave Senja Bay.
+
+Finish job 8 to unlock **free-roam** — the city stays open, the wanted
+level stays live, and the ending text hands you the keys.
+
+### The city
+
+- 16-block grid with varied buildings, neon signage, rooftop props,
+  awnings, balconies, a pier, a beach, a park, and a distant skyline.
+- Golden hour, day, and night lighting (press **T** to change the time).
+- Traffic, pedestrians, street lamps, palms, hydrants, bins, cones.
+- A pier gator that chases Raka on foot. Walk over gold cash stashes
+  for +$150 each.
+
+### Systems
+
+- **Wanted 0–5 stars** — police chase, shoot, set roadblocks, and call
+  in a helicopter at 3 stars and up. **BUSTED** costs a $200 bail fee.
+- **Garage shop (E near Bara's garage)** — Full Repair $400, Armour
+  Plating $800 (halves damage), Ammo Refill $300, four paints $600.
+- **Crew abilities** — Z: Sinta swaps plates (−1 star), X: Bara quick
+  fix (+40% condition), C: Nara marks police on the minimap.
+- **Combat** — five weapons, live ammo, tracers, muzzle flash, and
+  explosions when a police unit or your car is destroyed.
+- **Driving** — nitro (Shift, top speed 31 → 45), drift chains with
+  multipliers, near-miss bonuses, damage, and a working fuel gauge.
+- **Cinematic intro** — letterbox cards, then passenger banter during
+  drives, a phone with Dara's live mission text, and a radio
+  (Senja 101.9, press R).
+- **Progression** — money, respect, ranks (Rookie → Legend), a day
+  counter, and localStorage auto-save (press S to save by hand).
+- **Collision** — the car, Raka on foot, police, and traffic all collide
+  with buildings and each other; no wall-clipping.
+- **Sound** — procedural WebAudio: engine hum, sirens, gunshots,
+  explosions, chimes. Press U to mute.
+
+### Controls
+
+| Key | Action |
+| --- | --- |
+| W A S D / arrows | Drive / walk |
+| Shift | Nitro |
+| Space | Brake / handbrake |
+| F | Enter / exit car |
+| Mouse click | Shoot |
+| 1–5 | Switch weapon |
+| G | Enter garage (near it) |
+| E | Open shop (near garage) |
+| Z / X / C | Crew abilities |
+| T | Day / night |
+| R | Radio |
+| M | Big map |
+| O | Phone |
+| P / Esc | Pause |
+| S | Save |
+| U | Mute |
+
+Touch: on-screen joystick, FIRE, BRAKE, NITRO, ENTER, MAP, SHOP.
 
 ## Run it
 
-```sh
-node serve.ts
+Open `game/index.html` in a browser, or serve the folder:
+
+```
+npx serve game
 ```
 
-Then open http://localhost:8080 — no network request, all files are local (three.js is vendored under `game/`).
+`main.ts` (Node 22) builds the submission dossier. `vendor/makefun-game.ts`
+is the kit file, unchanged.
 
-## Controls
+## Credits
 
-- WASD / arrows: drive or walk, SPACE: handbrake, SHIFT: nitro
-- F: enter / exit car, steal a nearby traffic car
-- Mouse click: shoot (weapons 1-5)
-- G: garage (repair / shop), E: garage shop, R: radio, M: pause map, T: day/night
-- O: phone, Z / X / C: crew abilities (Sinta swap plates, Bara quick fix, Nara eyes out)
-- S: save, P: pause, U: mute
-
-## Features (v20 rebuild)
-
-- 8 story missions with checkpoints, timers, rewards and auto-save, ending in a victory + free-roam
-- Dynamic wanted level 0-5 stars: police chases, roadblocks, helicopter at 3+ stars, real police tactics
-- Garage shop (Full Repair $400, Armour $800, Ammo $300, 4 paints $600), explosions, drift/nitro scoring
-- Crew abilities, day/night toggle, radio "Senja 101.9", dense HUD with minimap, dispatch panel and rank
-- Cinematic intro, passenger banter, cash stashes, BUSTED sequence, phone messages, pier gator
-- Touch controls on mobile
-
----
-
-<sub>Entered on [make.fun](https://make.fun/?ref=ke91gf4a&utm_source=github&utm_medium=readme&utm_campaign=gta6-01) · AI agents build software for cash rewards</sub>
+All content is original — no Rockstar assets, names, or footage. Built
+with Three.js (vendored in `game/three.min.js`). City, characters, and
+story are invented for this bounty.
