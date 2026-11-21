@@ -101,6 +101,13 @@
   #busted { background: radial-gradient(ellipse at center, rgba(120,0,0,.6), rgba(10,0,0,.93)); flex-direction: column; text-align: center; color: #fff; z-index: 55; }
   #busted .bt { font-size: 58px; font-weight: 900; color: #ff5a5a; letter-spacing: 10px; text-shadow: 0 4px 24px rgba(255,60,60,.6); }
   #busted .bs { font-size: 15px; color: #ffd2d2; margin-top: 8px; }
+  #jobcard { position: fixed; inset: 0; z-index: 40; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; opacity: 0; transition: opacity .45s; text-align: center; }
+  #jobcard.on { opacity: 1; }
+  #jobcard .jc-act { font-size: 13px; font-weight: 800; letter-spacing: 5px; color: #f5c542; text-shadow: 0 2px 8px #000; }
+  #jobcard .jc-title { font-size: 44px; font-weight: 900; letter-spacing: 2px; color: #fff; text-shadow: 0 4px 18px #000; margin: 6px 0 2px; }
+  #jobcard .jc-obj { font-size: 17px; font-weight: 700; color: #ffe9a8; text-shadow: 0 2px 8px #000; }
+  #jobcard .jc-meta { font-size: 13px; font-weight: 700; color: #e8eaf2; text-shadow: 0 2px 6px #000; margin-top: 8px; letter-spacing: 1px; }
+  #jobcard.done .jc-title { color: #4be07a; }
   /* ---- shop ---- */
   #shop { top: 92px; right: 12px; width: 440px; z-index: 45; }
   #shop .sh { font-size: 19px; font-weight: 900; letter-spacing: 1px; }
@@ -156,7 +163,7 @@
 <div id="crew" class="panel"><div class="ch">CREW · SENJA BAY</div><div id="crewList"></div></div>
 <div id="mmwrap"><canvas id="minimap" width="150" height="150"></canvas><div id="district">Ocean Boulevard<div class="sub">Ocean Boulevard · Senja Bay · NEUTRAL · <span id="heatTxt">0</span></div></div><div class="barlbl">HEALTH <span id="hpTxt">100</span></div><div class="bar"><div id="hpBar" style="width:100%;background:#4be07a"></div></div><div class="barlbl">ARMOUR <span id="arTxt">50</span></div><div class="bar"><div id="arBar" style="width:50%;background:#5fd6ff"></div></div><div class="barlbl">RESPECT <span id="rsTxt">0/550</span></div><div class="bar"><div id="rsBar" style="width:0%;background:#f5a623"></div></div></div>
 <div id="dlg" class="panel"><div class="face">👩</div><div><div class="dt" id="dlgName">Dara · FIXER · SENJA BAY</div><div id="dlgTxt">Raka, first job is easy — just drive to the Marina Pier and follow the gold marker. Don't attract the SJPD yet.</div></div></div>
-<div id="speedo"><div class="sp"><span id="spdTxt">0</span> <small>KM/H</small></div><div class="carname">ARUNIKA GT</div><div class="cbar"><div id="condBar" style="width:100%;background:#4be07a"></div></div><div class="small" style="color:#e8eaf2;text-shadow:0 2px 6px #000">CONDITION <span id="condTxt">100%</span></div><div class="cbar"><div id="nitroBar" style="width:100%;background:#ff8a3d"></div></div><div class="small" style="color:#e8eaf2;text-shadow:0 2px 6px #000">NITRO <span id="nitroTxt">100</span></div><div id="radio">♪ SENJA 101.9 — "Island Pop" · Vela Roja</div><div class="small" style="color:#e8eaf2;text-shadow:0 2px 6px #000">GEAR <span id="gearTxt">N</span> · FUEL <span id="fuelTxt">60%</span> · GARAGE: 4 CARS</div></div>
+<div id="speedo"><div class="sp"><span id="spdTxt">0</span> <small>KM/H</small></div><div class="carname">ARUNIKA GT</div><div class="cbar"><div id="condBar" style="width:100%;background:#4be07a"></div></div><div class="small" style="color:#e8eaf2;text-shadow:0 2px 6px #000">CONDITION <span id="condTxt">100%</span></div><div class="cbar"><div id="nitroBar" style="width:100%;background:#ff8a3d"></div></div><div class="small" style="color:#e8eaf2;text-shadow:0 2px 6px #000">NITRO <span id="nitroTxt">100</span></div><div class="cbar"><div id="focusBar" style="width:100%;background:#5fd6ff"></div></div><div class="small" style="color:#e8eaf2;text-shadow:0 2px 6px #000">FOCUS <span id="focusTxt">100</span> · hold V to slow time</div><div id="radio">♪ SENJA 101.9 — "Island Pop" · Vela Roja</div><div class="small" style="color:#e8eaf2;text-shadow:0 2px 6px #000">GEAR <span id="gearTxt">N</span> · FUEL <span id="fuelTxt">60%</span> · GARAGE: 4 CARS</div></div>
 <div id="toasts"></div>
 <div id="floaters"></div>
 <div id="shop" class="panel"><div class="sh">🔧 BARA'S GARAGE — SHOP</div><div class="cash2">YOUR CASH <span id="shopCash">$1,500</span></div><div id="shopList"></div><div class="sfoot">Click an item or press 1–7 to buy · E / ESC / click outside to close · Game paused while shopping</div></div>
@@ -166,6 +173,7 @@
 <div id="intro" class="overlay"><div class="barT"></div><div class="barB"></div><div id="introCard"><div class="ic1" id="icKicker">SENJA BAY</div><div class="ic2" id="icTitle">TWO YEARS AGO — Raka walks free</div><div class="ic3" id="icBody">The gate clangs shut behind him. No money. No crew. Just a name the whole city still whispers.</div></div><div class="skip">CLICK OR PRESS ENTER TO SKIP</div></div>
 <div id="victory" class="overlay"><div class="vt">★ THE BOAT ★</div><div class="vs" id="victoryTxt">Eight jobs. One last plan. Raka steps onto the boat as the sun rises over Senja Bay — the SJPD sirens fading behind him. Dara's voice crackles over the radio: "You did it, Raka. The city is yours now."<br><br><b>FREE ROAM UNLOCKED</b> — keep driving, keep the heat on, keep Senja Bay yours.</div><button id="victoryBtn">KEEP DRIVING — FREE ROAM</button></div>
 <div id="busted" class="overlay"><div class="bt">BUSTED</div><div class="bs" id="bustedTxt">The SJPD takes you in. Bail posted: $200.</div><button id="bustedBtn">WALK OUT — TRY AGAIN</button></div>
+<div id="jobcard"><div class="jc-act" id="jcAct">ACT I · SMALL JOBS</div><div class="jc-title" id="jcTitle">JOB 1/8</div><div class="jc-obj" id="jcObj"></div><div class="jc-meta" id="jcMeta"></div></div>
 <div id="touch"><div id="joy"><div id="joyKnob"></div></div><div class="tbtn" id="btnFire">FIRE</div><div class="tbtn" id="btnBrake">BRAKE</div><div class="tbtn" id="btnNitro">NITRO</div><div class="tbtn" id="btnEnter">ENTER</div><div class="tbtn" id="btnMap">MAP</div><div class="tbtn" id="btnShop">SHOP</div></div>
 <script>
 /* ================= BLOCK 1 — data, state, utils, audio ================= */
@@ -535,16 +543,22 @@ function buildWorld() {
     pl.position.set(50, 0.25, -132 - i * 3.1); pl.castShadow = true; scene.add(pl);
   }
   // distant skyline + hills
-  const skyCols = [0x4a4a6a, 0x5a4a6a, 0x3a4a5a, 0x6a5a4a];
+  const skyCols = ['#5a4a72', '#6a4a6a', '#4a4a72', '#7a5a52'];
   for (let i = 0; i < 9; i++) {
     const h = 45 + ((i * 37) % 55);
-    const t = new THREE.Mesh(new THREE.BoxGeometry(16 + (i % 3) * 5, h, 16 + (i % 2) * 6), new THREE.MeshLambertMaterial({ color: skyCols[i % 4] }));
+    const stex = buildingTexture(skyCols[i % 4], i + 40);
+    const smat = new THREE.MeshLambertMaterial({ map: stex, emissive: 0xffffff, emissiveMap: stex, emissiveIntensity: 0.3 });
+    buildingMats.push(smat);
+    const t = new THREE.Mesh(new THREE.BoxGeometry(16 + (i % 3) * 5, h, 16 + (i % 2) * 6), smat);
     t.position.set(-260 + i * 62, h / 2 - 2, -260 - (i % 3) * 24);
     scene.add(t);
   }
   for (let i = 0; i < 5; i++) {
     const h = 30 + ((i * 23) % 30);
-    const t = new THREE.Mesh(new THREE.BoxGeometry(20, h, 20), new THREE.MeshLambertMaterial({ color: 0x3a3a55 }));
+    const stex2 = buildingTexture('#4a4468', i + 60);
+    const smat2 = new THREE.MeshLambertMaterial({ map: stex2, emissive: 0xffffff, emissiveMap: stex2, emissiveIntensity: 0.3 });
+    buildingMats.push(smat2);
+    const t = new THREE.Mesh(new THREE.BoxGeometry(20, h, 20), smat2);
     t.position.set(-220 + i * 110, h / 2 - 2, 250 + (i % 2) * 30);
     scene.add(t);
   }
@@ -855,6 +869,21 @@ function makeCarMesh(colorHex, isPlayer) {
     w.position.set(wx2, 0.44, wz2);
     g.add(w); wheels.push(w);
   }
+  // rear + front fender flares (wide hips — the muscle stance from the chase cam)
+  for (const [fx, fz] of [[-1.06, 1.5], [1.06, 1.5], [-1.06, -1.5], [1.06, -1.5]]) {
+    const fl = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.3, 1.25), paint);
+    fl.position.set(fx, 0.8, fz); g.add(fl);
+  }
+  // dark roof edge trim (defines the big red roof from above)
+  for (const rx of [-0.86, 0.86]) {
+    const rt = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.05, 1.95), darkTrim);
+    rt.position.set(rx, 1.35, -0.25); g.add(rt);
+  }
+  // diffuser fins (vertical strakes under the rear)
+  for (const fx of [-0.6, 0, 0.6]) {
+    const fin = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.2, 0.3), darkTrim);
+    fin.position.set(fx, 0.28, -2.4); g.add(fin);
+  }
   // headlights: sleek angled lenses + glow sprites
   const hm = new THREE.MeshBasicMaterial({ color: 0xfff6d8 });
   if (isPlayer) headMat = hm;
@@ -1095,7 +1124,7 @@ function applyTimeOfDay(mode) {
     S.night = true;
     skyMat.uniforms.top.value.setHex(0x0a1230); skyMat.uniforms.mid.value.setHex(0x1a2450); skyMat.uniforms.bot.value.setHex(0x05060f);
     scene.fog.color.setHex(0x0a1230); scene.fog.near = 90; scene.fog.far = 300;
-    sun.intensity = 0.12; sun.color.setHex(0x8aa0d0);
+    sun.intensity = 0.12; sun.color.setHex(0x8aa0d0); sun.position.set(-90, 120, -60);
     amb.intensity = 0.32; amb.color.setHex(0x5a6a9a); hemi.intensity = 0.28; rim.intensity = 0.12;
     buildingMats.forEach(m => { m.emissiveIntensity = 0.9; });
     facadeGlowMats.forEach(m => { m.opacity = 0.5; });
@@ -1117,7 +1146,7 @@ function applyTimeOfDay(mode) {
     S.night = false;
     skyMat.uniforms.top.value.setHex(0x2e6fc2); skyMat.uniforms.mid.value.setHex(0x7ec8e8); skyMat.uniforms.bot.value.setHex(0xbfe8ff);
     scene.fog.color.setHex(0x9fc8e8); scene.fog.near = 130; scene.fog.far = 380;
-    sun.intensity = 1.25; sun.color.setHex(0xfff2d0);
+    sun.intensity = 1.25; sun.color.setHex(0xfff2d0); sun.position.set(-90, 120, -60); sunBall.position.set(-160, 90, -300);
     amb.intensity = 0.72; amb.color.setHex(0xffffff); hemi.intensity = 0.6; rim.intensity = 0.4;
     buildingMats.forEach(m => { m.emissiveIntensity = 0.1; });
     facadeGlowMats.forEach(m => { m.opacity = 0.04; });
@@ -1139,7 +1168,7 @@ function applyTimeOfDay(mode) {
     S.night = false;
     skyMat.uniforms.top.value.setHex(0x2e6fc2); skyMat.uniforms.mid.value.setHex(0xff9a3d); skyMat.uniforms.bot.value.setHex(0x3a1c4a);
     scene.fog.color.setHex(0xffc07a); scene.fog.near = 110; scene.fog.far = 340;
-    sun.intensity = 1.05; sun.color.setHex(0xffe0b3);
+    sun.intensity = 1.05; sun.color.setHex(0xffe0b3); sun.position.set(-150, 55, -70); sunBall.position.set(-210, 44, -320);
     amb.intensity = 0.56; amb.color.setHex(0xffe8cc); hemi.intensity = 0.5; rim.intensity = 0.7; rim.color.setHex(0xff9a3d);
     buildingMats.forEach(m => { m.emissiveIntensity = 0.15; });
     facadeGlowMats.forEach(m => { m.opacity = 0.07; });
@@ -1164,7 +1193,7 @@ function applyTimeOfDay(mode) {
 <script>
 /* ================= BLOCK 3 — input, movement, collision, missions, AI, HUD, loop ================= */
 const keys = {};
-let mouseX = 0, mouseY = 0, shotTimer = 0;
+let mouseX = 0, mouseY = 0, shotTimer = 0, focusLeft = 100, focusOn = false, rain = null, rainSpd = null, rainOn = false, rainT = 0, rainNext = 150;
 addEventListener('keydown', e => {
   const k = e.key.toLowerCase();
   keys[k] = true;
@@ -1183,10 +1212,11 @@ addEventListener('keydown', e => {
   if (k === 's' && !onFoot) saveGame();
   if (k === 'u') { S.muted = !S.muted; toast(S.muted ? '🔇 Sound muted (U to unmute)' : '🔊 Sound on'); }
   if (k === 'z' || k === 'x' || k === 'c') useAbility(k);
+  if (k === 'v') focusOn = true;
   if (k >= '1' && k <= '5') selectWeapon(parseInt(k) - 1);
   if (k === 'escape') { closeShop(); el('phone').style.display = 'none'; el('mapov').classList.remove('on'); }
 });
-addEventListener('keyup', e => { keys[e.key.toLowerCase()] = false; });
+addEventListener('keyup', e => { keys[e.key.toLowerCase()] = false; if (e.key.toLowerCase() === 'v') focusOn = false; });
 addEventListener('mousemove', e => { mouseX = e.clientX; mouseY = e.clientY; });
 addEventListener('mousedown', e => {
   if (!S.started || S.paused || S.busted || S.victory) return;
@@ -1481,7 +1511,7 @@ function spawnPolice() {
     const road = V_ROADS[i % V_ROADS.length];
     c.position.set(road, 0, -100 + i * 45);
     c.rotation.y = 0;
-    c.userData = Object.assign(c.userData, { active: false, hp: 100, tactic: 'CLOSING IN', tacticT: 0, shootT: 0, respawnT: 0, id: i, speed: 0 });
+    c.userData = Object.assign(c.userData, { active: false, hp: 100, tactic: 'CLOSING IN', tacticT: 0, shootT: 0, respawnT: 0, id: i, speed: 0, callsign: ['ELANG', 'GARUDA', 'BANGAU', 'MERPATI', 'RAJAWALI'][i] });
     scene.add(c); police.push(c);
   }
 }
@@ -1559,13 +1589,13 @@ function updatePolice(dt) {
   // heli
   if (S.wanted >= 3 && S.started && !S.paused) {
     if (!heli) {
-      heli = makeHeli(); heli.position.set(px + 20, 42, pz - 30); scene.add(heli);
+      heli = makeHeli(); heli.position.set(px + 10, 34, pz - 12); scene.add(heli);
       el('airTxt').textContent = '🚁 AIR UNIT ACTIVE';
       toast('🚁 SJPD air unit is overhead');
     }
-    heli.position.x = lerp(heli.position.x, px + 14, dt * 0.7);
-    heli.position.z = lerp(heli.position.z, pz - 18, dt * 0.7);
-    heli.position.y = 42 + Math.sin(performance.now() / 900) * 2;
+    heli.position.x = lerp(heli.position.x, px + 10, dt * 0.7);
+    heli.position.z = lerp(heli.position.z, pz - 12, dt * 0.7);
+    heli.position.y = 34 + Math.sin(performance.now() / 900) * 2;
     heli.rotation.y += dt * 0.4;
     heli.userData.rotor.rotation.y += dt * 22;
     heli.userData.rotor2.rotation.y += dt * 22;
@@ -1665,7 +1695,8 @@ function startMission(i) {
   if (i === 6) S.wanted = Math.max(S.wanted, 3);
   if (i === 7) S.wanted = Math.max(S.wanted, 4);
   say(m.fixer, m.intro);
-  toast('📋 JOB ' + (i + 1) + '/8 · ' + m.name + ' — ' + m.obj);
+  showJobCard('JOB ' + (i + 1) + '/8 · ' + m.name, actFor(i), m.obj, m.fixer + ' · $' + m.money.toLocaleString('en-US') + ' · +' + m.rep + ' REP');
+  addPhoneMsg(m.fixer, m.obj + ' — $' + m.money.toLocaleString('en-US') + ' if you pull it off. Don\'t keep me waiting.');
   sfxHorn();
 }
 function say(who, txt) {
@@ -1674,6 +1705,20 @@ function say(who, txt) {
   el('dlgTxt').textContent = txt;
   const face = el('dlg').querySelector('.face');
   if (face) face.textContent = faces[who] || '👤';
+}
+let jcLeft = 0;
+function actFor(i) { return i < 2 ? 'ACT I · SMALL JOBS' : i < 6 ? 'ACT II · THE HEAT RISES' : 'ACT III · THE BOAT'; }
+function showJobCard(title, act, obj, meta, done) {
+  el('jcAct').textContent = act; el('jcTitle').textContent = title; el('jcObj').textContent = obj; el('jcMeta').textContent = meta;
+  el('jobcard').classList.toggle('done', !!done); el('jobcard').classList.add('on');
+  jcLeft = 4.5;
+}
+function addPhoneMsg(who, txt) {
+  const list = el('phoneList'); if (!list) return;
+  const d = document.createElement('div'); d.className = 'pm';
+  d.innerHTML = '<b>' + who + '</b> · just now<br>' + txt;
+  list.prepend(d);
+  while (list.children.length > 6) list.removeChild(list.lastChild);
 }
 function updateMission(dt) {
   if (!S.missionActive || S.paused || !S.started) return;
@@ -1723,7 +1768,7 @@ function completeMission() {
   S.money += m.money; S.rep += m.rep; S.respect = Math.min(550, S.respect + m.rep);
   S.missionActive = false;
   cpMarker.visible = false;
-  toast('✅ JOB COMPLETE · +$' + m.money.toLocaleString('en-US') + ' · +' + m.rep + ' REP', 4200);
+  showJobCard('★ JOB COMPLETE ★', actFor(S.mission), m.name + ' — done.', '+$' + m.money.toLocaleString('en-US') + ' · +' + m.rep + ' REP', true);
   floatText('JOB COMPLETE · +$' + m.money.toLocaleString('en-US'), '#4be07a');
   say(m.fixer, m.done);
   sfxChime();
@@ -1971,7 +2016,8 @@ function updateHUD() {
   el('jobStory').textContent = (S.mission + 1) + '/8';
   el('jobRep').textContent = S.rep;
   const ws = '★'.repeat(S.wanted) + '☆'.repeat(5 - S.wanted);
-  el('wantedStars').textContent = ws + ' · ' + (S.wanted === 0 ? 'CLEAR' : S.wanted + (S.wanted === 1 ? ' STAR' : ' STARS'));
+  const inSight = S.wanted > 0 && police.some(c => c.userData.active && d2(c.position.x, c.position.z, onFoot ? wx : px, onFoot ? wz : pz) < 60);
+  el('wantedStars').innerHTML = ws + ' · ' + (S.wanted === 0 ? 'CLEAR' : S.wanted + (S.wanted === 1 ? ' STAR' : ' STARS')) + (inSight ? ' · <span style="color:#ff5a5a">● IN SIGHT</span>' : (S.wanted > 0 ? ' · <span style="color:#ffb02e">○ SEARCHING</span>' : ''));
   el('moneyStars').textContent = ws;
   el('cashTxt').textContent = fmt$(S.money);
   el('rankName').textContent = rankFor(S.rep);
@@ -1988,8 +2034,9 @@ function updateHUD() {
   else act.forEach((c, i) => {
     const dd = Math.round(d2(c.position.x, c.position.z, px2, pz2));
     const tc = c.userData.tactic === 'FIRING' ? 'fire' : c.userData.tactic === 'ROADBLOCK' ? 'road' : 'close';
-    dh += '<div class="du"><span>UNIT ' + (i + 1) + ' · SJ-' + (100 + c.userData.id) + '</span><span class="tag ' + tc + '">' + c.userData.tactic + '</span><span>' + dd + 'm</span></div>';
+    dh += '<div class="du"><span>' + (c.userData.callsign || ('SJ-' + (100 + c.userData.id))) + '</span><span class="tag ' + tc + '">' + c.userData.tactic + '</span><span>' + dd + 'm</span></div>';
   });
+  if (heli) dh += '<div class="du"><span>AIR-1 · HELI</span><span class="tag close">SPOTLIGHT</span><span>' + Math.round(d2(heli.position.x, heli.position.z, px2, pz2)) + 'm</span></div>';
   el('dispList').innerHTML = dh;
   el('dispNote').textContent = S.wanted >= 4 ? 'Full response — roadblocks and air support deployed.' : S.wanted >= 1 ? 'Units converging on your position.' : 'Streets are quiet — for now.';
   // crew
@@ -2008,6 +2055,8 @@ function updateHUD() {
   el('condBar').style.background = S.condition > 50 ? '#4be07a' : S.condition > 25 ? '#ff9f2e' : '#ff5a5a';
   el('nitroTxt').textContent = Math.round(S.nitro);
   el('nitroBar').style.width = clamp(S.nitro, 0, 100) + '%';
+  el('focusTxt').textContent = Math.round(focusLeft);
+  el('focusBar').style.width = clamp(focusLeft, 0, 100) + '%';
   el('gearTxt').textContent = S.gear;
   el('fuelTxt').textContent = Math.round(S.fuel) + '%';
   const dist = districtAt(px2, pz2);
@@ -2252,18 +2301,24 @@ function animate() {
   frameCount++;
   if (S.started && !S.paused && !S.busted) {
     if (crashCd > 0) crashCd -= dt;
+    if (jcLeft > 0) { jcLeft -= dt; if (jcLeft <= 0) el('jobcard').classList.remove('on'); }
     if (shootCd > 0) shootCd -= dt;
     CREW.forEach(c => { if (c.cdLeft > 0) c.cdLeft -= dt; });
     if (eyesOutT > 0) eyesOutT -= dt;
-    if (onFoot) updateWalker(dt); else updateCar(dt);
-    updateAutopilot(dt);
-    updateTraffic(dt);
-    updatePeds(dt);
-    updatePolice(dt);
-    updateGator(dt);
-    updateExplosions(dt);
+    if (focusOn && focusLeft > 0) focusLeft = Math.max(0, focusLeft - dt * 30); else if (focusLeft < 100) focusLeft = Math.min(100, focusLeft + dt * 8);
+    const effDt = (focusOn && focusLeft > 0) ? dt * 0.35 : dt;
+    if (onFoot) updateWalker(effDt); else updateCar(effDt);
+    updateAutopilot(effDt);
+    updateTraffic(effDt);
+    updatePeds(effDt);
+    updatePolice(effDt);
+    updateGator(effDt);
+    updateExplosions(effDt);
     updateMission(dt);
     updateWanted(dt);
+    rainNext -= dt;
+    if (rainNext <= 0 && !rainOn) { rainOn = true; rainT = 45; if (rain) rain.visible = true; toast('🌧 Rain rolling in over Senja Bay'); rainNext = 200 + Math.random() * 120; }
+    if (rainOn) { rainT -= dt; updateRain(dt); if (rainT <= 0) { rainOn = false; if (rain) rain.visible = false; toast('🌤 Rain clearing — the sun is back'); } }
     audioTick();
     if (shotMode === 'explosion') {
       shotTimer -= dt;
@@ -2287,8 +2342,35 @@ function animate() {
   if (el('mapov').classList.contains('on')) drawBigMap();
   renderer.render(scene, camera);
 }
+function buildRain() {
+  const N = 140;
+  const pos = new Float32Array(N * 6);
+  rainSpd = new Float32Array(N);
+  for (let i = 0; i < N; i++) {
+    const x = (Math.random() - 0.5) * 100, y = Math.random() * 35, z = (Math.random() - 0.5) * 100;
+    pos.set([x, y, z, x, y + 1.3, z], i * 6);
+    rainSpd[i] = 26 + Math.random() * 10;
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  rain = new THREE.LineSegments(g, new THREE.LineBasicMaterial({ color: 0x9fb8d8, transparent: true, opacity: 0.4 }));
+  rain.visible = false; rain.frustumCulled = false;
+  scene.add(rain);
+}
+function updateRain(dt) {
+  if (!rain || !rain.visible) return;
+  rain.position.set(px, 0, pz);
+  const a = rain.geometry.attributes.position.array;
+  for (let i = 0; i < rainSpd.length; i++) {
+    let y = a[i * 6 + 1] - rainSpd[i] * dt;
+    if (y < 0.2) { y = 32 + Math.random() * 6; a[i * 6] = (Math.random() - 0.5) * 100; a[i * 6 + 2] = (Math.random() - 0.5) * 100; }
+    a[i * 6 + 1] = y; a[i * 6 + 4] = y + 1.3;
+    a[i * 6 + 3] = a[i * 6]; a[i * 6 + 5] = a[i * 6 + 2];
+  }
+  rain.geometry.attributes.position.needsUpdate = true;
+}
 /* ---------- boot ---------- */
-buildWorld();
+buildWorld(); buildRain();
 playerCar = makeCarMesh(PAINTS[S.paint], true);
 playerCar.position.set(px, 0, pz);
 scene.add(playerCar);
