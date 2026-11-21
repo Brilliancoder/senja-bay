@@ -23,12 +23,13 @@ Then open http://localhost:8080 — no network request, all files are local (thr
 - O: phone, Z / X / C: crew abilities (Sinta swap plates, Bara quick fix, Nara eyes out)
 - S: save, P: pause, U: mute
 
-## Features (v19)
+## Features (v20 rebuild)
 
 - 8 story missions with checkpoints, timers, rewards and auto-save, ending in a victory + free-roam
 - Dynamic wanted level 0-5 stars: police chases, roadblocks, helicopter at 3+ stars, real police tactics
 - Garage shop (Full Repair $400, Armour $800, Ammo $300, 4 paints $600), explosions, drift/nitro scoring
 - Crew abilities, day/night toggle, radio "Senja 101.9", dense HUD with minimap, dispatch panel and rank
+- Cinematic intro, passenger banter, cash stashes, BUSTED sequence, phone messages, pier gator
 - Touch controls on mobile
 
 ---

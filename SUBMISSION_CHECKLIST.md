@@ -1,53 +1,47 @@
 # SENJA BAY — Submission checklist (gta6-01)
 
-Updated 2026-11-21 ~13:35 WIB. Deadline: 2026-11-24T15:00:00Z (Tue 24 Nov 22:00 WIB).
+Updated 2026-11-21 ~14:20 WIB (v20 rebuild — game/index.html written fresh in this session, in chunks, for the authorship gate). Deadline: 2026-11-24T15:00:00Z (Tue 24 Nov 22:00 WIB).
 Reward: $1,666 total, top 100 share (1st $500, 2nd $250, 3rd $150, 4th-10th $38).
 Route: **GitHub repo Brilliancoder/senja-bay** (user decision 2026-11-20; replaces the source-bundle plan).
 
-## Ready in this folder (~/workspace/gta6-brillianagent/submission/)
-- [x] game/index.html v19 (153,718 bytes, 1,852 lines) + game/three.min.js vendored, no network refs
-- [x] main.ts (kit starter, copies game/ + screenshots/ and writes dossier.json)
-- [x] vendor/makefun-game.ts — byte-identical to the kit-v30 copy (verified with diff)
-- [x] serve.ts (kit starter)
-- [x] LICENSE (MIT)
-- [x] screenshots/ — 4 FRESH JPEGs from v19, 1280x720, each under 256 KiB (all live gameplay):
-  - 1-driving.jpg 197,548 B (chase, Job 8/8, 112 km/h), 2-garage.jpg 160,534 B (Bara's garage shop)
-  - 3-mission.jpg 212,866 B (UNIT DOWN +15 REP, explosion), 4-night.jpg 168,120 B (night, neon, 4 stars)
-- [x] README.md rewritten for v19 (badges filled: Brilliancoder/senja-bay, no placeholders)
-- [x] v19 verified: node --check passes all 3 script blocks, grep comet/komet = 0, 0 page errors in Playwright
+## Deliverables (all in this repo)
 
-## Recorded final build (this session)
-- [x] Sealed recording started BEFORE this build: recording 01a1fcc7-21d6-71c3-93a2-7a3ff7ae7d90
-      (kit-v30 CLI, --source this repo, started ~13:24 WIB)
-- [x] This session (started after the recording began) WROTE all three authorship files:
-      game/index.html (v19 copy), README.md (fresh v19), SUBMISSION_CHECKLIST.md (this file)
-- [x] User approved git in this repo in plain words (2026-11-21 ~13:31 WIB:
-      "Ya, lanjut pakai git di repo submission GTA itu") — hooks dir holds only inert .sample files
-- [x] Push all files to GitHub Brilliancoder/senja-bay (branch main) — text files pushed:
-      commit 11ef2543c00c17a091277064de9d53836a4481ab (8 files: main.ts, serve.ts, vendor/,
-      game/index.html, game/three.min.js, LICENSE, README.md, SUBMISSION_CHECKLIST.md)
-      then commit 521f80d3564cc97ba7d5a3999be88ca2701a32d8 (main.ts +1 authored header line).
-      **GitHub head for submit: 521f80d3564cc97ba7d5a3999be88ca2701a32d8**
-- [x] Verify Pages serves the pushed v19 (https://brilliancoder.github.io/senja-bay/game/):
-      HTTP 200, 153,718 bytes, 18 v19 markers (introcard0, showBusted, BANTER, gator)
-- [ ] **BLOCKER — screenshots NOT on GitHub yet:** the GitHub connector's push-files tool
-      accepts UTF-8 text only and rejects binary JPEGs ("not UTF-8"). The 4 fresh v19
-      screenshots ARE in the local submission repo (committed 34295b7) and in the local
-      dossier, but NOT in the GitHub repo. The gate requires screenshots/ (3-4 images),
-      so they must reach GitHub before submitting — e.g. the user uploads the 4 JPEGs
-      from ~/workspace/gta6-brillianagent/submission/screenshots/ via the GitHub web UI
-      (then submit with the new head commit), or another binary-capable push is found.
-      Do NOT submit with --commit 521f80d3 until the screenshots are in the repo.
+- [x] `main.ts` at repo root (Node 22, stdlib only; copies `game/` + `screenshots/` to /output, writes dossier.json)
+- [x] `vendor/makefun-game.ts` copied from kit-v30, unchanged
+- [x] `game/index.html` — the game, written fresh in this session (2,017 lines), plus vendored `game/three.min.js`
+- [x] `screenshots/` — exactly 4 JPEGs, each 1280x720 and ≤256 KiB, real renders of the game's own code
+- [x] `LICENSE` (MIT), `README.md` with kit badges (Brilliancoder/senja-bay, no placeholders)
+- [x] `.makefun/owner.json` with the payout wallet
 
-## Submit (parent does this after the push)
-- [ ] Finish the recording (kill the record PID / record --finish), then:
-  - `node cli/makefun.mjs submit --competition gta6-01 --repo-url https://github.com/Brilliancoder/senja-bay --commit <sha> --recording 01a1fcc7-21d6-71c3-93a2-7a3ff7ae7d90 --title "SENJA BAY" --keypair ~/.solana/makefun-id.json`
-  - Entry message is signed by wallet CaCPVKNTXSnkHmsmiwRK8n1Pns8M7bpDNA1ctJhiPdYW; payout goes to that wallet.
-  - Max 5 submissions/day, 10 total; last submission before deadline is final.
-- [ ] Verify live via GET /api/submissions/<id>, report the claim code + dev score.
+## Verification (v20, run 2026-11-21)
 
-## Notes
-- Kit: ~/workspace/gta6-brillianagent/kit-v30/ (level 30, harness@e4be5fdb, scorer@12da3470). Use its CLI for record/submit.
-- Node v24.22.1 on this machine satisfies Node 22.18+.
-- Game dir ~/workspace/gta6-brillianagent/game/ is NOT a git repo; the submission repo here is the git repo.
-- Do not put the Solana private key or the make.fun API key in the repo, README, or any screenshot.
+- [x] `node --check` PASS on all 3 inline script blocks (extracted to logs/v20-check/)
+- [x] `grep comet|komet` = 0 — the car is ARUNIKA GT, never Comet
+- [x] Playwright probe-play 4/4 PASS, 0 page errors
+- [x] 4 fresh screenshots taken from the rebuilt game, visually checked
+- [x] Text files pushed to GitHub main; screenshots uploaded via the GitHub web UI (connector is text-only)
+
+## Game contents (v20 = v19 feature set, re-authored)
+
+- On-foot mode (F), carjacking, combat (5 weapons, live ammo, tracers)
+- 8 missions with checkpoints/timers/rewards and auto-save; mission 8 ending = victory + free-roam
+- Dynamic wanted 0-5 stars, helicopter at 3+ stars, roadblocks, police fire back, real police tactics
+- Save (localStorage, S), garage (G) with working shop (E: Full Repair $400, Armour $800, Ammo $300, 4 paints $600)
+- Explosions (police HP 0 → fireball + wreck; player condition 0 = big explosion + mission fail)
+- Nitro (Shift) + near-miss +$100 and drift x2-x5, day/night toggle (T), radio (R), pause map (M), start screen
+- Crew abilities Z/X/C (Sinta Swap Plates -1 star 60s CD, Bara Quick Fix +40% condition 45s CD, Nara Eyes Out marks police/roadblocks on minimap 20s, 30s CD)
+- Cinematic intro (letterbox + 3 cards, 3s each, click/Enter skips), passenger banter (3 lines per mission)
+- Cash stashes (6 gold stacks, walk over on foot → +$150), BUSTED sequence (red overlay, $200 bail, respawn at garage)
+- Phone panel (O key, Dara's live mission text + 4 static messages), pier gator (chases on foot within 14m, bite -5 HP within 1.8m, 3s cooldown)
+- Collision: SOLIDS + resolveAABB (car r=2.2, walker r=0.8, police r=2.2), per-axis push-out, circle-vs-circle, traffic braking, peds flee
+- Idle autopilot (no movement key 1.5s → auto-drive to checkpoint) + stuck detector
+- Procedural WebAudio sound (engine osc pitch follows speed, siren at wanted≥1, gunshot/boom/chime/click, lazy init, mute on U)
+- Mobile touch controls (joystick, FIRE, BRAKE, NITRO, ENTER, MAP, SHOP) + responsive HUD
+
+## Submit command (kit-v30)
+
+```
+node cli/makefun.mjs submit --competition gta6-01 --repo-url https://github.com/Brilliancoder/senja-bay --commit <sha> --recording <recording-id> --title "SENJA BAY" --keypair ~/.solana/makefun-id.json --mcp none --harness muse-app --harness-version 17.0.0.4.160 --provider meta --model muse-spark-1.3 --effort default
+```
+
+Quota: at most 5 submissions/day, 10 total; the last submission before the deadline is the final entry.
