@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8">
 <title>SENJA BAY — by brillianagent</title>
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{width:100%;height:100%;overflow:hidden;background:#1b1030;font-family:Arial,Helvetica,sans-serif;color:#fff}
+html,body{width:100%;height:100%;overflow:hidden;background:#1b1030;font-family:Arial,Helvetica,sans-serif;color:#fff;touch-action:none;overscroll-behavior:none}
 #game{position:fixed;inset:0}
 canvas.webgl{position:absolute;inset:0;width:100%;height:100%;display:block}
 .hud{position:absolute;z-index:5;text-shadow:0 2px 4px rgba(0,0,0,.85)}
@@ -112,6 +112,60 @@ body.shot-shop #shop .box{width:470px}
 #nitrob{background:#ff7a18}
 #driftchip{display:none;color:#ffd23f;font-weight:900;font-size:16px;margin-top:4px;text-shadow:0 1px 3px rgba(0,0,0,.8)}
 .shot #controls{display:none}
+/* v16 touch controls + small-screen HUD */
+#touch{position:absolute;inset:0;z-index:6;display:none;pointer-events:none;touch-action:none}
+#joy{position:absolute;left:18px;bottom:190px;width:124px;height:124px;border-radius:50%;background:rgba(12,12,28,.45);border:2px solid rgba(255,210,63,.4);pointer-events:auto;touch-action:none}
+#joyknob{position:absolute;left:37px;top:37px;width:50px;height:50px;border-radius:50%;background:rgba(255,210,63,.85);box-shadow:0 2px 8px rgba(0,0,0,.5)}
+.tbtn{position:absolute;width:64px;height:64px;border-radius:50%;background:rgba(12,12,28,.75);border:2px solid rgba(255,210,63,.55);color:#ffd23f;font-weight:900;font-size:12px;display:flex;align-items:center;justify-content:center;text-align:center;pointer-events:auto;touch-action:none;user-select:none;-webkit-user-select:none}
+.tbtn:active{background:rgba(255,210,63,.85);color:#222}
+#btnFire{right:18px;bottom:190px;width:76px;height:76px;font-size:14px}
+#btnBrake{right:108px;bottom:172px}
+#btnNitro{right:36px;bottom:278px}
+#btnEnter{right:112px;bottom:268px}
+#btnMap{right:196px;bottom:190px;width:52px;height:52px;font-size:11px}
+#btnShop{right:196px;bottom:268px;width:52px;height:52px;font-size:11px}
+@media (pointer:coarse){#touch{display:block}#controls{display:none!important}}
+@media (max-width:760px){
+/* v17 mobile HUD: single column, no overlaps — dense desktop panels hidden, essentials kept */
+#mission{left:8px;top:8px;width:calc(100vw - 16px);padding:9px 11px}
+#mission h1{font-size:16px}
+#mission .sub{font-size:11px}
+#mission .next{font-size:11px}
+#mission .next:last-child{display:none}
+#jobs,#dispatch,#crew{display:none}
+#wanted{top:128px;font-size:18px;letter-spacing:2px}
+#wanted small{font-size:9px;letter-spacing:1px}
+#weather{display:none}
+#topright{top:124px;right:8px}
+#topright .time,#topright #rank,#topright #air,#topright #stars{display:none}
+#money{font-size:22px}
+#stars{font-size:17px;margin:1px 0}
+#weapons{top:158px;right:8px;gap:5px}
+#weapons .w{width:38px;font-size:9px;padding:4px 2px}
+#weapons .w b{font-size:13px}
+#bl{left:8px;top:158px;width:150px}
+#minimap{width:88px;height:88px}
+#loc{font-size:13px;margin-top:4px}
+#loc small{font-size:10px}
+#bl .meter{font-size:10px;margin-top:3px}
+#bl .meter .tr{height:7px}
+#br{top:214px;right:8px;bottom:auto;width:160px;text-align:right}
+#speed{font-size:38px}
+#veh{font-size:13px}
+#cond,#nitrom{font-size:10px}
+#br #radio,#br div:last-child{display:none}
+#dlg{left:8px;right:8px;top:352px;bottom:auto;width:auto;transform:none;padding:9px 11px}
+#dlg .av{width:40px;height:40px;font-size:22px;border-radius:8px}
+#dlg p{font-size:12px}
+#toast{top:430px;font-size:16px;padding:9px 16px}
+#shopprompt{bottom:auto;top:430px;font-size:13px}
+#start .box{padding:20px 16px;max-width:calc(100vw - 20px)}
+#start h1{font-size:32px}
+#start h2{font-size:13px}
+#start p{font-size:13px}
+#shop .box,#mapov .box,#victory .box{width:calc(100vw - 20px);max-height:72vh}
+#mapov canvas{width:100%;height:auto}
+}
 </style></head>
 <body>
 <div id="game"></div>
@@ -154,6 +208,7 @@ body.shot-shop #shop .box{width:470px}
 </div>
 
 <div class="hud" id="controls"><b>[WASD]</b> drive / walk · <b>[SPACE]</b> handbrake · <b>[SHIFT]</b> nitro<br><b>[F]</b> exit / enter / steal car · <b>[CLICK]</b> shoot<br><b>[M]</b> map · <b>[G]</b> garage · <b>[E]</b> garage shop · <b>[R]</b> radio · <b>[S]</b> save · <b>[P]</b> pause · <b>[T]</b> day / night · <b>[Z/X/C]</b> crew<br>Auto-drive ON until you steer.</div>
+<div id="touch"><div id="joy"><div id="joyknob"></div></div><div class="tbtn" id="btnFire">FIRE</div><div class="tbtn" id="btnBrake">BRAKE</div><div class="tbtn" id="btnNitro">NITRO</div><div class="tbtn" id="btnEnter">ENTER</div><div class="tbtn" id="btnMap">MAP</div><div class="tbtn" id="btnShop">SHOP</div></div>
 
 <div class="hud" id="bl">
   <canvas id="minimap" width="340" height="340"></canvas>
@@ -202,7 +257,7 @@ body.shot-shop #shop .box{width:470px}
 
 <div id="victory"><div class="box">
   <h2>🏆 SENJA BAY IS YOURS</h2>
-  <p id="victorytext">All 8 jobs done. The city is yours, Raka.</p>
+  <p id="victorytext">All 8 jobs done. The boat is waiting at Marina Pier — Raka beat the SJPD, the chopper, and the whole city. Senja Bay is yours.</p>
   <p id="victorystats" style="color:#ffd23f;font-size:17px"></p>
   <p style="color:#7dffb0">FREE ROAM — keep driving, shopping and chasing. The story is complete.</p>
   <p style="font-size:13px;color:#cfe6ff">Click or press ENTER to keep playing</p>
@@ -211,6 +266,7 @@ body.shot-shop #shop .box{width:470px}
 <div id="start"><div class="box">
   <h1>SENJA BAY</h1>
   <h2>An original open-world crime game · by brillianagent · starring Raka</h2>
+  <p style="color:#ffd23f">Raka is out, and Dara has one last plan: eight jobs across Senja Bay — from the Marina Pier to the boat that sails at dawn. Pull them off and the city is yours. The SJPD will not make it easy.</p>
   <p>Drive and walk the Miramar Strip. Traffic, pedestrians, carjacking, a wanted level, SJPD police, helicopter, roadblocks, 8 story missions, a crew with usable abilities, garage shop, nitro boost, saves and radio — all in one static page, no network needed.</p>
   <p style="margin-top:8px;color:#ffd23f"><b>WASD drive/walk · F exit/enter/steal · CLICK shoot · M map · G garage · E shop · SHIFT nitro · T day/night · R radio · S save · Z/X/C crew abilities</b></p>
   <button id="startbtn">▶ &nbsp;START ENGINE</button>
@@ -226,6 +282,63 @@ const scene=new THREE.Scene();
 scene.background=new THREE.Color(0xe08a5e);
 scene.fog=new THREE.Fog(0xff9e66,84,288);
 const camera=new THREE.PerspectiveCamera(62,1280/720,0.1,600);
+
+let AC=null, muted=false;
+let audioBus, engineOsc, engineGain, sirenOsc, sirenGain;
+function initAudio(){
+  const Context=window.AudioContext||window.webkitAudioContext;
+  if(!Context) return;
+  if(!AC){
+    AC=new Context();
+    audioBus=AC.createGain();
+    audioBus.gain.value=muted?0:0.5;
+    audioBus.connect(AC.destination);
+    engineOsc=AC.createOscillator(); engineGain=AC.createGain();
+    engineOsc.type='triangle'; engineGain.gain.value=0;
+    engineOsc.connect(engineGain).connect(audioBus); engineOsc.start();
+    sirenOsc=AC.createOscillator(); sirenGain=AC.createGain();
+    sirenOsc.type='sine'; sirenGain.gain.value=0;
+    sirenOsc.connect(sirenGain).connect(audioBus); sirenOsc.start();
+  }
+  if(AC.state==='suspended') AC.resume().catch(()=>{});
+}
+addEventListener('pointerdown',initAudio,{once:true});
+addEventListener('keydown',initAudio,{once:true});
+
+function sfxEngine(speed01){
+  if(!AC) return;
+  engineOsc.frequency.setTargetAtTime(42+speed01*105,AC.currentTime,0.06);
+  engineGain.gain.setTargetAtTime(speed01>0.01?0.045+speed01*0.065:0,AC.currentTime,0.08);
+}
+function sfxSiren(on){
+  if(!AC) return;
+  const now=AC.currentTime;
+  sirenOsc.frequency.setTargetAtTime(Math.floor(now*3)%2?780:565,now,0.035);
+  sirenGain.gain.setTargetAtTime(on?0.055:0,now,0.08);
+}
+// ponytail: Oscillator-only effects. Add filtered noise if impacts need more texture.
+function sfxTone(type,from,to,volume,duration,delay=0){
+  if(!AC||muted||AC.state!=='running') return;
+  const start=AC.currentTime+delay, end=start+duration;
+  const osc=AC.createOscillator(), gain=AC.createGain();
+  osc.type=type;
+  osc.frequency.setValueAtTime(from,start);
+  osc.frequency.exponentialRampToValueAtTime(to,end);
+  gain.gain.setValueAtTime(0.001,start);
+  gain.gain.linearRampToValueAtTime(volume,start+0.008);
+  gain.gain.exponentialRampToValueAtTime(0.001,end);
+  osc.connect(gain).connect(audioBus);
+  osc.start(start); osc.stop(end);
+}
+function sfxShot(){ sfxTone('sawtooth',225,50,0.19,0.09); }
+function sfxBoom(){ sfxTone('triangle',115,29,0.32,0.42); }
+function sfxChime(){
+  sfxTone('sine',523,523,0.15,0.22);
+  sfxTone('sine',659,659,0.15,0.22,0.09);
+  sfxTone('sine',784,784,0.18,0.35,0.18);
+}
+function sfxClick(){ sfxTone('triangle',920,460,0.10,0.055); }
+
 const renderer=new THREE.WebGLRenderer({antialias:true});
 renderer.setSize(1280,720); renderer.setPixelRatio(1);
 renderer.shadowMap.enabled=false; // shadow pass costs 2x fps in SwiftShader (1.4fps, race test times out) — blob + fake long shadows used instead
@@ -272,7 +385,7 @@ const moonGlow=new THREE.Sprite(new THREE.SpriteMaterial({map:glowTex,color:0x9d
 function groundMat(c){return new THREE.MeshLambertMaterial({color:c});}
 const cityGroundMat=groundMat(0x3d3a4a);
 const cityGround=new THREE.Mesh(new THREE.PlaneGeometry(320,320),cityGroundMat); cityGround.rotation.x=-Math.PI/2; cityGround.position.set(-20,0,0); cityGround.receiveShadow=true; scene.add(cityGround);
-const sandTex=canvasTex(256,256,(g)=>{ g.fillStyle='#f5ead0'; g.fillRect(0,0,256,256); for(let i=0;i<260;i++){ const r=4+Math.random()*16; g.fillStyle=Math.random()<0.55?'rgba(178,138,70,0.32)':'rgba(255,255,255,0.30)'; g.beginPath(); g.arc(Math.random()*256,Math.random()*256,r,0,7); g.fill(); } for(let i=0;i<1200;i++){ g.fillStyle=Math.random()<0.5?'rgba(255,255,255,0.06)':'rgba(0,0,0,0.07)'; g.fillRect(Math.random()*256,Math.random()*256,1.5,1.5); } });
+const sandTex=canvasTex(256,256,(g)=>{ g.fillStyle='#f5ead0'; g.fillRect(0,0,256,256); for(let i=0;i<420;i++){ const r=2+Math.random()*7; g.fillStyle=Math.random()<0.55?'rgba(178,138,70,0.32)':'rgba(255,255,255,0.30)'; g.beginPath(); g.arc(Math.random()*256,Math.random()*256,r,0,7); g.fill(); } for(let i=0;i<1200;i++){ g.fillStyle=Math.random()<0.5?'rgba(255,255,255,0.06)':'rgba(0,0,0,0.07)'; g.fillRect(Math.random()*256,Math.random()*256,1.5,1.5); } });
 sandTex.wrapS=sandTex.wrapT=THREE.RepeatWrapping; sandTex.repeat.set(4,16);
 const sandMat=new THREE.MeshLambertMaterial({map:sandTex});
 const sand=new THREE.Mesh(new THREE.PlaneGeometry(70,320),sandMat); sand.rotation.x=-Math.PI/2; sand.position.set(145,0.05,0); sand.receiveShadow=true; scene.add(sand);
@@ -285,21 +398,21 @@ for(let j=0;j<4;j++){ const m=new THREE.Mesh(new THREE.BoxGeometry(20+j*4,16+j*6
 for(let k=0;k<5;k++){ const st=new THREE.Mesh(new THREE.BoxGeometry(18+((k*3)%8),32+((k*11)%22),16),groundMat([0x2f2645,0x3a2f55,0x251a38][k%3])); st.position.set(60+k*35,(32+((k*11)%22))*0.5,-190+((k*29)%40)); scene.add(st); }
 function roadTexture(axis){ const t=canvasTex(128,128,(g)=>{ g.fillStyle='#262633'; g.fillRect(0,0,128,128); for(let i=0;i<900;i++){ g.fillStyle=Math.random()<0.5?'rgba(255,255,255,0.06)':'rgba(0,0,0,0.22)'; g.fillRect(Math.random()*128,Math.random()*128,1.6,1.6); } if(axis==='v'){ for(let y=32;y<96;y+=16){ g.fillStyle='#ffd23f'; g.fillRect(60,y,8,8); } g.fillStyle='rgba(255,255,255,0.7)'; g.fillRect(48,32,1.5,64); g.fillRect(76,32,1.5,64); } else { for(let x=32;x<96;x+=16){ g.fillStyle='#ffd23f'; g.fillRect(x,60,8,8); } g.fillStyle='rgba(255,255,255,0.7)'; g.fillRect(32,48,64,1.5); g.fillRect(32,76,64,1.5); } }); t.wrapS=t.wrapT=THREE.RepeatWrapping; return t; }
 const roadTexV=roadTexture('v'); roadTexV.repeat.set(1,37);
-const roadTexH=roadTexture('h'); roadTexH.repeat.set(37,1);
+const roadTexH=roadTexture('h'); roadTexH.repeat.set(40,1);
 const roadMatV=new THREE.MeshLambertMaterial({map:roadTexV});
 const roadMatH=new THREE.MeshLambertMaterial({map:roadTexH});
 const roadMats=[roadMatV,roadMatH];
-function road(x,z,w,d){const m=new THREE.Mesh(new THREE.PlaneGeometry(w,d),w>d?roadMatH:roadMatV);m.rotation.x=-Math.PI/2;m.position.set(x,0.1,z);m.receiveShadow=true;scene.add(m);}
-for(let i=0;i<5;i++){road(-100+i*50,0,16,300); road(-20,-120+i*60,300,16);}
+function road(x,z,w,d,y){const m=new THREE.Mesh(new THREE.PlaneGeometry(w,d),w>d?roadMatH:roadMatV);m.rotation.x=-Math.PI/2;m.position.set(x,y===undefined?0.1:y,z);m.receiveShadow=true;scene.add(m);}
+for(let i=0;i<5;i++){road(-100+i*50,0,16,300,0.15); road(-10,-120+i*60,320,16,0.18);}
 // sidewalks (lighter than road), kerbs, zebra crossings, lamps, benches, traffic lights
 const walkTex=canvasTex(64,64,(g)=>{g.fillStyle='#9a917f';g.fillRect(0,0,64,64);g.strokeStyle='#7a755f';g.lineWidth=1.5;for(let i=0;i<64;i+=32){g.beginPath();g.moveTo(i,0);g.lineTo(i,64);g.moveTo(0,i);g.lineTo(64,i);g.stroke();}});walkTex.wrapS=walkTex.wrapT=THREE.RepeatWrapping;walkTex.repeat.set(1,40);
 const walkMat=new THREE.MeshLambertMaterial({map:walkTex});
-for(let i=0;i<5;i++){ const x=-100+i*50; [-11.5,11.5].forEach(o=>{ const sw=new THREE.Mesh(new THREE.PlaneGeometry(7,300),walkMat); sw.rotation.x=-Math.PI/2; sw.position.set(x+o,0.06,0); sw.receiveShadow=true; scene.add(sw); const k=new THREE.Mesh(new THREE.BoxGeometry(0.35,0.25,300),groundMat(0x6a655c)); k.position.set(x+(o>0?8:-8),0.13,0); scene.add(k); }); }
-for(let i=0;i<5;i++){ const z=-120+i*60; [-11.5,11.5].forEach(o=>{ const sw=new THREE.Mesh(new THREE.PlaneGeometry(300,7),walkMat); sw.rotation.x=-Math.PI/2; sw.position.set(-20,0.06,z+o); sw.receiveShadow=true; scene.add(sw); }); }
+for(let i=0;i<5;i++){ const x=-100+i*50; [-11.5,11.5].forEach(o=>{ const sw=new THREE.Mesh(new THREE.PlaneGeometry(7,300),walkMat); sw.rotation.x=-Math.PI/2; sw.position.set(x+o,0.08,0); sw.receiveShadow=true; scene.add(sw); const k=new THREE.Mesh(new THREE.BoxGeometry(0.35,0.25,300),groundMat(0x6a655c)); k.position.set(x+(o>0?8:-8),0.13,0); scene.add(k); }); }
+for(let i=0;i<5;i++){ const z=-120+i*60; [-11.5,11.5].forEach(o=>{ const sw=new THREE.Mesh(new THREE.PlaneGeometry(320,7),walkMat); sw.rotation.x=-Math.PI/2; sw.position.set(-10,0.08,z+o); sw.receiveShadow=true; scene.add(sw); }); }
 [-1,1].forEach(s=>{ const k=new THREE.Mesh(new THREE.BoxGeometry(0.5,0.35,300),groundMat(0x6a655c)); k.position.set(50+s*8.4,0.17,0); scene.add(k); });
-[[50,0],[0,-60],[-50,60],[50,-120]].forEach(p=>{ for(let i=0;i<6;i++){ const s=new THREE.Mesh(new THREE.PlaneGeometry(0.85,5.5),new THREE.MeshBasicMaterial({color:0xcfc9b8})); s.rotation.x=-Math.PI/2; s.position.set(p[0]-3.75+i*1.5,0.13,p[1]); scene.add(s); } });
+[[50,0],[0,-60],[-50,60],[50,-120]].forEach(p=>{ for(let i=0;i<6;i++){ const s=new THREE.Mesh(new THREE.PlaneGeometry(0.85,5.5),new THREE.MeshBasicMaterial({color:0xcfc9b8})); s.rotation.x=-Math.PI/2; s.position.set(p[0]-3.75+i*1.5,0.20,p[1]); scene.add(s); } });
 // subtle asphalt tone patches so the boulevard reads as road, not flat paper (v10: the white crossing dominated the driving frame)
-[[50,-20,0x000000],[50,60,0xffffff],[50,-80,0x000000],[0,-30,0xffffff],[-50,20,0x000000]].forEach(a=>{ const p=new THREE.Mesh(new THREE.PlaneGeometry(14,26),new THREE.MeshBasicMaterial({color:a[2],transparent:true,opacity:0.07,depthWrite:false})); p.rotation.x=-Math.PI/2; p.position.set(a[0],0.12,a[1]); scene.add(p); });
+[[50,-20,0x000000],[50,60,0xffffff],[50,-80,0x000000],[0,-30,0xffffff],[-50,20,0x000000]].forEach(a=>{ const p=new THREE.Mesh(new THREE.PlaneGeometry(14,26),new THREE.MeshBasicMaterial({color:a[2],transparent:true,opacity:0.07,depthWrite:false})); p.rotation.x=-Math.PI/2; p.position.set(a[0],0.20,a[1]); scene.add(p); });
 const lampGlows=[];
 function lamp(x,z,arm){ const g=new THREE.Group(); const pole=new THREE.Mesh(new THREE.CylinderGeometry(0.12,0.16,5.5,6),groundMat(0x3a3a48)); pole.position.y=2.75; g.add(pole); const a=new THREE.Mesh(new THREE.BoxGeometry(1.6,0.15,0.15),groundMat(0x3a3a48)); a.position.set(arm*0.7,5.4,0); g.add(a); const bulb=new THREE.Mesh(new THREE.SphereGeometry(0.32,8,8),new THREE.MeshBasicMaterial({color:0xffe9a8})); bulb.position.set(arm*1.4,5.3,0); g.add(bulb); const gl=new THREE.Sprite(new THREE.SpriteMaterial({map:glowTex,color:0xffd98a,transparent:true,opacity:0.28,depthWrite:false})); gl.scale.set(7,7,1); gl.position.set(arm*1.4,5.3,0); g.add(gl); lampGlows.push(gl); g.position.set(x,0,z); scene.add(g); }
 for(let z=-120;z<=120;z+=40){ lamp(41,z,1); lamp(59,z,-1); }
@@ -479,7 +592,7 @@ for(let i=0;i<6;i++){ const b=new THREE.Mesh(new THREE.ConeGeometry(0.7,1.6,8),g
   const top=new THREE.Mesh(new THREE.ConeGeometry(2.6,1.0,8),groundMat([0xff5a7a,0xffd23f,0x2f7de1,0x7dff8a,0xff5a7a][i])); top.position.set(x,2.9,z); scene.add(top);
 });
 // wet-sand strip along the waterline + darker sand patches + sea sparkle so the beach is not one flat colour
-const wetSand=new THREE.Mesh(new THREE.PlaneGeometry(10,320),groundMat(0xc9a86a)); wetSand.rotation.x=-Math.PI/2; wetSand.position.set(176,0.08,0); scene.add(wetSand);
+const wetSand=new THREE.Mesh(new THREE.PlaneGeometry(10,320),groundMat(0xc9a86a)); wetSand.rotation.x=-Math.PI/2; wetSand.position.set(176,0.10,0); scene.add(wetSand);
 [[130,-60],[150,30],[120,60],[160,-90],[140,110],[118,-110],[135,-18],[148,-48],[126,5]].forEach(p=>{ const patch=new THREE.Mesh(new THREE.CircleGeometry(9+((p[0]+p[1])%5),12),groundMat(0xdcbc7e)); patch.rotation.x=-Math.PI/2; patch.scale.set(1.6,1,1); patch.position.set(p[0],0.07,p[1]); scene.add(patch); });
 // v10: more sand variation in the pier foreground (the on-foot frame was one flat yellow field)
 [[128,-28,7,0xd9b878],[142,-22,8,0xc9a86a],[130,-8,6,0xe0c184],[150,-38,9,0xd4af6e],[138,-45,6,0xc9a86a],[145,-5,7,0xdcbc7e],[122,-35,5,0xd9b878]].forEach(p=>{ const patch=new THREE.Mesh(new THREE.CircleGeometry(p[2],12),groundMat(p[3])); patch.rotation.x=-Math.PI/2; patch.scale.set(1.5,1,1); patch.position.set(p[0],0.07,p[1]); scene.add(patch); });
@@ -784,14 +897,14 @@ const RADIOS=[
   '♪ OMBAK 98.4 — “Golden Hour” · Sunset Club',
 ];
 const MISSIONS=[
-  {n:1, code:'FIRST GEAR', title:'Drive to the Marina Pier', sub:'Follow the gold marker', next:'Reach the gold checkpoint', time:180, reward:800, rep:40, who:'Dara', role:'FIXER · SENJA BAY', text:'Raka, first job is easy — just drive to the Marina Pier and follow the gold marker. Don\'t attract the SJPD yet.', cps:[{x:50,z:-130}]},
-  {n:2, code:'LOSE THE HEAT', title:'Lose the SJPD tail', sub:'Break line of sight — stay hidden 15s', next:'Stay out of sight until the stars drop', time:120, reward:1200, rep:60, who:'Nara', role:'LOOKOUT · CREW', text:'They are on you, Raka. Duck down the side streets and stay out of sight — the stars only fall when nobody sees you.', cps:[{x:-50,z:-60}]},
-  {n:3, code:'PIER DELIVERY', title:'Deliver the Arunika to the drop-off', sub:'No damage, no police hit', next:'Deliver the car to Pasar Malam', time:150, reward:1500, rep:70, who:'Dara', role:'FIXER · SENJA BAY', text:'The buyer is waiting at Pasar Malam. Bring the Arunika in one piece — scratches cost you money.', cps:[{x:-100,z:60}]},
-  {n:4, code:'STREET RACE', title:'Senja Sprint — 4 checkpoints', sub:'Beat the clock, hit every gate', next:'Hit checkpoint 1 of 4', time:120, reward:2500, rep:100, who:'Sinta', role:'DRIVER · CREW', text:'Four gates, one clock. Sinta\'s money is on you — don\'t lift off the throttle until the last gate.', cps:[{x:50,z:-60},{x:0,z:-60},{x:0,z:60},{x:50,z:60}]},
-  {n:5, code:'SWAP PLATES', title:'Reach the garage and swap plates', sub:'Press G at the blue garage', next:'Get to Bara\'s garage', time:150, reward:1000, rep:50, who:'Bara', role:'MECHANIC · CREW', text:'Your plates are burned. Bring the car to my garage and I\'ll swap them and patch the body — press G when you arrive.', cps:[{x:-125,z:120}]},
-  {n:6, code:'NIGHT RUN', title:'Three drops before dawn', sub:'Hit all 3 markers in order', next:'Drop 1 of 3 — Bukit Neon', time:180, reward:2200, rep:90, who:'Dara', role:'FIXER · SENJA BAY', text:'Three packages, three corners of the city. Bukit Neon first, then the pier, then the market. Move fast.', cps:[{x:-50,z:-60},{x:50,z:-130},{x:-100,z:0}]},
-  {n:7, code:'PIER STANDOFF', title:'Disable 3 SJPD units', sub:'Click to shoot — watch your ammo', next:'Disable SJPD units: 0 / 3', time:180, reward:3000, rep:120, who:'Nara', role:'LOOKOUT · CREW', text:'They set a trap at the pier. You have the Mako — click to shoot and disable three units. Make every round count.', cps:[{x:50,z:-100}]},
-  {n:8, code:'THE BOAT', title:'Reach the boat before it sails', sub:'Final job — 4 stars, no turning back', next:'Reach the boat at Marina Pier', time:150, reward:5000, rep:200, who:'Dara', role:'FIXER · SENJA BAY', text:'The boat sails in two minutes! Shake that chopper and get to the pier — the tide waits for no one, Raka.', cps:[{x:50,z:-138}]},
+  {n:1, code:'FIRST GEAR', title:'Drive to the Marina Pier', sub:'Follow the gold marker', next:'Reach the gold checkpoint', time:180, reward:800, rep:40, who:'Dara', role:'FIXER · SENJA BAY', text:'Raka, first job is easy — just drive to the Marina Pier and follow the gold marker. Don\'t attract the SJPD yet.', done:'Clean run, Raka. The pier crew is already talking about you.', cps:[{x:50,z:-130}]},
+  {n:2, code:'LOSE THE HEAT', title:'Lose the SJPD tail', sub:'Break line of sight — stay hidden 15s', next:'Stay out of sight until the stars drop', time:120, reward:1200, rep:60, who:'Nara', role:'LOOKOUT · CREW', text:'They are on you, Raka. Duck down the side streets and stay out of sight — the stars only fall when nobody sees you.', done:'They lost you. Stay sharp — they will come back twice as angry.', cps:[{x:-50,z:-60}]},
+  {n:3, code:'PIER DELIVERY', title:'Deliver the Arunika to the drop-off', sub:'No damage, no police hit', next:'Deliver the car to Pasar Malam', time:150, reward:1500, rep:70, who:'Dara', role:'FIXER · SENJA BAY', text:'The buyer is waiting at Pasar Malam. Bring the Arunika in one piece — scratches cost you money.', done:'Buyer paid in full. Not a scratch — that is how you build a name.', cps:[{x:-100,z:60}]},
+  {n:4, code:'STREET RACE', title:'Senja Sprint — 4 checkpoints', sub:'Beat the clock, hit every gate', next:'Hit checkpoint 1 of 4', time:120, reward:2500, rep:100, who:'Sinta', role:'DRIVER · CREW', text:'Four gates, one clock. Sinta\'s money is on you — don\'t lift off the throttle until the last gate.', done:'Four gates, one winner. I knew my money was safe on you.', cps:[{x:50,z:-60},{x:0,z:-60},{x:0,z:60},{x:50,z:60}]},
+  {n:5, code:'SWAP PLATES', title:'Reach the garage and swap plates', sub:'Press G at the blue garage', next:'Get to Bara\'s garage', time:150, reward:1000, rep:50, who:'Bara', role:'MECHANIC · CREW', text:'Your plates are burned. Bring the car to my garage and I\'ll swap them and patch the body — press G when you arrive.', done:'Fresh plates, patched body. The SJPD is looking for a ghost now.', cps:[{x:-125,z:120}]},
+  {n:6, code:'NIGHT RUN', title:'Three drops before dawn', sub:'Hit all 3 markers in order', next:'Drop 1 of 3 — Bukit Neon', time:180, reward:2200, rep:90, who:'Dara', role:'FIXER · SENJA BAY', text:'Three packages, three corners of the city. Bukit Neon first, then the pier, then the market. Move fast.', done:'Three drops, no witnesses. Dawn is coming — one more push.', cps:[{x:-50,z:-60},{x:50,z:-130},{x:-100,z:0}]},
+  {n:7, code:'PIER STANDOFF', title:'Disable 3 SJPD units', sub:'Click to shoot — watch your ammo', next:'Disable SJPD units: 0 / 3', time:180, reward:3000, rep:120, who:'Nara', role:'LOOKOUT · CREW', text:'They set a trap at the pier. You have the Mako — click to shoot and disable three units. Make every round count.', done:'Three units down and the pier is quiet. They will not trap you twice.', cps:[{x:50,z:-100}]},
+  {n:8, code:'THE BOAT', title:'Reach the boat before it sails', sub:'Final job — 4 stars, no turning back', next:'Reach the boat at Marina Pier', time:150, reward:5000, rep:200, who:'Dara', role:'FIXER · SENJA BAY', text:'The boat sails in two minutes! Shake that chopper and get to the pier — the tide waits for no one, Raka.', done:'The boat is yours. Senja Bay is yours, Raka.', cps:[{x:50,z:-138}]},
 ];
 let S={ money:2500, respect:0, mission:0, cp:0, health:100, armour:50, condition:100, fuel:82, wanted:0, weapon:2, ammo:[Infinity,72,150,40,0], radio:0, completed:0, paint:0xff6a2a, armourOwned:false, ownedPaints:[0xff6a2a], victory:false };
 function saveGame(){ try{ localStorage.setItem(SAVE_KEY, JSON.stringify({money:S.money,respect:S.respect,mission:S.mission,completed:S.completed,health:S.health,condition:S.condition,paint:S.paint,armour:S.armour,armourOwned:S.armourOwned,ownedPaints:S.ownedPaints,ammo:S.ammo,victory:S.victory})); toast('💾 SAVED','Progress saved to this browser'); }catch(e){} }
@@ -869,6 +982,7 @@ function updateMissionHUD(){
 }
 function fmtTime(s){ s=Math.max(0,Math.ceil(s)); return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); }
 function completeMission(){
+  sfxChime();
   const m=curMission();
   S.money+=m.reward; S.respect+=m.rep; S.completed++;
   toast('✅ JOB '+m.n+' COMPLETE','+$'+m.reward.toLocaleString()+' · +'+m.rep+' respect · saved');
@@ -880,6 +994,9 @@ function completeMission(){
   if(MISSIONS[S.mission].n===7) S.wanted=Math.max(S.wanted,3);
   if(MISSIONS[S.mission].n===8) S.wanted=Math.max(S.wanted,4);
   updateMissionHUD();
+  document.getElementById('dlgname').textContent=m.who;
+  document.getElementById('dlgrole').textContent=m.role;
+  document.getElementById('dlgtext').textContent=m.done||m.text;
 }
 function failMission(reason){
   toast('❌ JOB FAILED', reason+' — retrying Job '+curMission().n);
@@ -923,6 +1040,7 @@ function stealCar(){
   toast('🚨 VEHICLE STOLEN', vehicleName+' · Wanted +1★');
 }
 function shoot(){
+  sfxShot();
   if(shootCooldown>0) return;
   const w=WEAPONS[S.weapon];
   if(S.ammo[S.weapon]!==Infinity && S.ammo[S.weapon]<=0){ toast('🔫 OUT OF AMMO','Switch weapon with 1–5'); shootCooldown=0.4; return; }
@@ -1043,20 +1161,23 @@ document.getElementById('shop').addEventListener('click',e=>{ if(e.target.id==='
 // ---------- EXPLOSIONS (cheap sprite-stack fireball + smoke + flash + shake) ----------
 const explosions=[];
 function spawnExplosion(x,z,big,quiet){
+  sfxBoom();
   const g=new THREE.Group();
-  const fb=[], fbBase=[6,10.5,15];
+  const fb=[], fbBase=[5,8,12];
   [0xffd23f,0xff7a18,0xff3d00].forEach((col,i)=>{
     const s=new THREE.Sprite(new THREE.SpriteMaterial({map:glowTex,color:col,transparent:true,opacity:0.95,depthWrite:false}));
     s.position.y=1.2+i*0.4; s.scale.set(fbBase[i],fbBase[i],1); g.add(s); fb.push(s);
   });
   // bright white-yellow ignition flash — the first thing the eye sees at thumbnail size (v10)
   const ig=new THREE.Sprite(new THREE.SpriteMaterial({map:glowTex,color:0xfff6c9,transparent:true,opacity:1,blending:THREE.AdditiveBlending,depthWrite:false}));
-  ig.position.y=1.6; ig.scale.set(14,14,1); g.add(ig);
+  ig.position.y=1.6; ig.scale.set(11,11,1); g.add(ig);
+  const core=new THREE.Sprite(new THREE.SpriteMaterial({map:glowTex,color:0xffffff,transparent:true,opacity:1,blending:THREE.AdditiveBlending,depthWrite:false}));
+  core.position.y=1.4; core.scale.set(6,6,1); g.add(core);
   const sm=[];
   for(let i=0;i<5;i++){
-    const s=new THREE.Sprite(new THREE.SpriteMaterial({map:glowTex,color:0x181818,transparent:true,opacity:0.45,depthWrite:false}));
+    const s=new THREE.Sprite(new THREE.SpriteMaterial({map:glowTex,color:0x181818,transparent:true,opacity:0.55,depthWrite:false}));
     s.position.set((Math.random()-0.5)*4,2.5+Math.random()*2.5,(Math.random()-0.5)*4);
-    const sc=2.5+Math.random()*2; s.scale.set(sc,sc,1); g.add(s); sm.push(s);
+    const sc=2+Math.random()*1.5; s.scale.set(sc,sc,1); g.add(s); sm.push(s);
   }
   g.position.set(x,0,z); scene.add(g);
   explosions.push({g,fb,fbBase,sm,ig,t:0,life:big?3.0:2.5});
@@ -1066,6 +1187,12 @@ function spawnExplosion(x,z,big,quiet){
 function showHitmark(){ const h=document.getElementById('hitmark'); h.style.display='block'; clearTimeout(h._t); h._t=setTimeout(()=>{ h.style.display='none'; },180); }
 // input
 addEventListener('keydown',e=>{
+  if((e.key==='u'||e.key==='U')&&!e.repeat){
+    muted=!muted;
+    if(audioBus) audioBus.gain.setTargetAtTime(muted?0:0.5,AC.currentTime,0.02);
+    sfxClick();
+  }
+
   const k=e.key.toLowerCase(); keys[k]=true;
   if([' ','arrowup','arrowdown'].includes(k)) e.preventDefault();
   if(victoryOpen && (k==='enter'||k==='escape') && !e.repeat){ hideVictory(); return; }
@@ -1091,7 +1218,29 @@ addEventListener('keydown',e=>{
   if(k>='1'&&k<='5'){ S.weapon=parseInt(k,10)-1; renderWeapons(); }
 });
 addEventListener('keyup',e=>{keys[e.key.toLowerCase()]=false;});
-addEventListener('mousedown',e=>{ if(e.target && e.target.closest && (e.target.closest('#start')||e.target.closest('#shop'))) return; if(e.target && e.target.closest && e.target.closest('#victory')){ hideVictory(); return; } if(!paused && !shopOpen) shoot(); });
+addEventListener('mousedown',e=>{ if(e.target && e.target.closest && (e.target.closest('#start')||e.target.closest('#shop')||e.target.closest('#touch'))) return; if(e.target && e.target.closest && e.target.closest('#victory')){ hideVictory(); return; } if(!paused && !shopOpen) shoot(); });
+// v16 touch controls: write into the same keys{} the loop already reads
+(function(){
+  if(!('ontouchstart' in window)) return;
+  document.getElementById('touch').style.display='block';
+  document.getElementById('shopprompt').textContent="🛒 Tap SHOP — BARA'S GARAGE SHOP";
+  function bindBtn(id,key){ const el=document.getElementById(id); if(!el) return; el.addEventListener('touchstart',e=>{ e.preventDefault(); keys[key]=true; },{passive:false}); const off=e=>{ e.preventDefault(); keys[key]=false; }; el.addEventListener('touchend',off,{passive:false}); el.addEventListener('touchcancel',off,{passive:false}); }
+  bindBtn('btnBrake',' '); bindBtn('btnNitro','shift');
+  const fire=document.getElementById('btnFire');
+  if(fire) fire.addEventListener('touchstart',e=>{ e.preventDefault(); if(!paused && !shopOpen) shoot(); },{passive:false});
+  const enter=document.getElementById('btnEnter');
+  if(enter) enter.addEventListener('touchstart',e=>{ e.preventDefault(); if(onFoot) stealCar(); else { const near=nearestTraffic(7); if(near && Math.abs(speed)<2) exitCar(); else if(Math.abs(speed)<2) exitCar(); } },{passive:false});
+  const map=document.getElementById('btnMap');
+  if(map) map.addEventListener('touchstart',e=>{ e.preventDefault(); const ov=document.getElementById('mapov'); const open=ov.style.display!=='flex'; ov.style.display=open?'flex':'none'; document.body.classList.toggle('driving',!open); if(open) drawBigMap(); },{passive:false});
+  const shop=document.getElementById('btnShop');
+  if(shop) shop.addEventListener('touchstart',e=>{ e.preventDefault(); if(shopOpen) closeShop(); else openShop(); },{passive:false});
+  const joy=document.getElementById('joy'), knob=document.getElementById('joyknob');
+  let joyId=null;
+  function joyMove(t){ const r=joy.getBoundingClientRect(); let dx=t.clientX-(r.left+r.width/2), dy=t.clientY-(r.top+r.height/2); const len=Math.hypot(dx,dy), max=45; if(len>max){ dx*=max/len; dy*=max/len; } knob.style.left=(37+dx)+'px'; knob.style.top=(37+dy)+'px'; keys['arrowleft']=dx<-12; keys['arrowright']=dx>12; keys['arrowup']=dy<-12; keys['arrowdown']=dy>12; }
+  function joyEnd(){ joyId=null; knob.style.left='37px'; knob.style.top='37px'; keys['arrowleft']=keys['arrowright']=keys['arrowup']=keys['arrowdown']=false; }
+  if(joy){ joy.addEventListener('touchstart',e=>{ e.preventDefault(); const t=e.changedTouches[0]; joyId=t.identifier; joyMove(t); },{passive:false}); joy.addEventListener('touchmove',e=>{ e.preventDefault(); for(const t of e.changedTouches){ if(t.identifier===joyId) joyMove(t); } },{passive:false}); joy.addEventListener('touchend',e=>{ for(const t of e.changedTouches){ if(t.identifier===joyId) joyEnd(); } },{passive:false}); joy.addEventListener('touchcancel',joyEnd,{passive:false}); }
+  document.addEventListener('touchmove',e=>{ if(e.target && e.target.closest && (e.target.closest('#shop')||e.target.closest('#mapov')||e.target.closest('#start'))) return; e.preventDefault(); },{passive:false});
+})();
 function renderWeapons(){
   document.getElementById('weapons').innerHTML=WEAPONS.map((w,i)=>{
     const a=S.ammo[i]===Infinity?'∞':S.ammo[i];
@@ -1129,7 +1278,7 @@ function applyTimeOfDay(mode){
     roadMats.forEach(m=>m.color.setHex(0x8a8a9a)); cityGroundMat.color.setHex(0x24222e); sandMat.color.setHex(0x8a7448); seaMat.color.setHex(0x0e3a55);
     lampGlows.forEach(s=>s.material.opacity=0.95);
     headlightMats.forEach(m=>m.emissiveIntensity=1.6);
-    taillightMats.forEach(m=>m.emissiveIntensity=1.9);
+    taillightMats.forEach(m=>m.emissiveIntensity=2.6);
     nightGlowSprites.forEach(s=>s.material.opacity=0.85);
     // night identity: warm the orange paint + underglow + rim strips so the Arunika is not a silhouette (v10: was still unreadable)
     if(playerCar.userData.bodyMat) playerCar.userData.bodyMat.emissive.setHex(0x7a2a00);
@@ -1276,6 +1425,7 @@ let last=performance.now();
 let abilityDemoDone=false;
 function loop(now){
   requestAnimationFrame(loop);
+  try{ sfxEngine(Math.min(1,Math.abs(speed||0)/45)); sfxSiren(wanted>=1); }catch{}
   if(paused){ updateHUD(); drawMinimap(); renderer.render(scene,camera); return; }
   const dt=Math.min(0.05,(now-last)/1000); last=now; elapsed+=dt;
   if(shootCooldown>0) shootCooldown-=dt;
@@ -1346,8 +1496,8 @@ function loop(now){
     playerCar.userData.steer.forEach(sg=>{ sg.rotation.y=steer*0.35; });
     // brake lights flare when braking
     const braking=keys[' ']||((keys['s']||keys['arrowdown'])&&speed>1);
-    playerCar.userData.tailMat.emissiveIntensity=braking?2.6:(isNight?1.5:0.7);
-    if(playerCar.userData.tailGlow) playerCar.userData.tailGlow.forEach(s=>{ s.material.opacity=braking?0.95:(isNight?0.7:0.08); });
+    playerCar.userData.tailMat.emissiveIntensity=braking?2.6:(isNight?2.2:0.7);
+    if(playerCar.userData.tailGlow) playerCar.userData.tailGlow.forEach(s=>{ s.material.opacity=braking?0.95:(isNight?0.9:0.08); });
     // speeding near police raises wanted slowly
     if(Math.abs(speed)>25 && police.some(c=>c.userData.active && Math.hypot(c.position.x-px,c.position.z-pz)<30)){ wantedTimer+=dt; if(wantedTimer>4){ wantedTimer=0; addWanted(1,'SPEEDING PAST SJPD'); } }
   }
@@ -1391,7 +1541,7 @@ function loop(now){
         const overlap=4.6-pd;
         const dx=px-c.position.x,dz=pz-c.position.z,d=Math.hypot(dx,dz);
         if(d>0.01){ px+=dx/d*overlap; pz+=dz/d*overlap; }
-        if(crashCd<=0&&Math.abs(speed)>5){ speed*=0.5; const dmg=S.armourOwned?2:3; S.condition=Math.max(0,S.condition-dmg); floatText('💥 CRASH -'+dmg+'% CONDITION'); crashCd=1.2; shakeT=0.3; shakeMag=0.4; }
+        if(crashCd<=0&&Math.abs(speed)>5){ speed*=0.5; const dmg=S.armourOwned?2:3; S.condition=Math.max(0,S.condition-dmg); floatText('💥 CRASH -'+dmg+'% CONDITION'); crashCd=1.2; shakeT=0.5; shakeMag=0.8; }
       }
     }
     if(c.userData.lights){const on=Math.floor(elapsed*6+i)%2===0; c.userData.lights[0].material.color.setHex(on?0xff2222:0x550000); c.userData.lights[1].material.color.setHex(on?0x000055:0x2244ff); if(c.userData.glow){ c.userData.glow[0].material.opacity=on?0.9:0.08; c.userData.glow[1].material.opacity=on?0.08:0.9; }}
@@ -1434,7 +1584,7 @@ function loop(now){
         const overlap=4.6-pd;
         const dx=px-c.position.x,dz=pz-c.position.z,d=Math.hypot(dx,dz);
         if(d>0.01){ px+=dx/d*overlap; pz+=dz/d*overlap; }
-        if(crashCd<=0&&Math.abs(speed)>5){ speed*=0.5; const dmg=S.armourOwned?2:3; S.condition=Math.max(0,S.condition-dmg); floatText('💥 CRASH -'+dmg+'% CONDITION'); crashCd=1.2; shakeT=0.3; shakeMag=0.4; }
+        if(crashCd<=0&&Math.abs(speed)>5){ speed*=0.5; const dmg=S.armourOwned?2:3; S.condition=Math.max(0,S.condition-dmg); floatText('💥 CRASH -'+dmg+'% CONDITION'); crashCd=1.2; shakeT=0.5; shakeMag=0.8; }
       }
       if(pd>2.3 && pd<4.0 && Math.abs(speed)>15 && (c.userData.nmCd||0)<=0){ c.userData.nmCd=3; S.money+=100; floatText('NEAR MISS +$100'); }
     }
@@ -1538,7 +1688,8 @@ function loop(now){
   camera.lookAt(cx0+Math.sin(hd0)*13,2.0,cz0+Math.cos(hd0)*13);
   }
   const targetFov=(onFoot?62:62+Math.min(12,Math.abs(speed)*0.4))+(nitroActive?10:0)+(SHOT==='chase'?6:0);
-  if(Math.abs(camera.fov-targetFov)>0.3){ camera.fov+=(targetFov-camera.fov)*0.15; camera.updateProjectionMatrix(); }
+  const driveFov=62+(targetFov-62)*1.45;
+  if(Math.abs(camera.fov-driveFov)>0.3){ camera.fov+=(driveFov-camera.fov)*0.15; camera.updateProjectionMatrix(); }
   if(shakeT>0){ shakeT-=dt; camera.position.x+=(Math.random()-0.5)*shakeMag; camera.position.y+=(Math.random()-0.5)*shakeMag*0.6; }
   // blue-white halo follows the muzzle flash brightness (single place: covers shoot(), abilities and staging)
   flashHalo.material.opacity=flash.material.opacity*0.6;
