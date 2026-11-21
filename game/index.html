@@ -59,6 +59,20 @@ canvas.webgl{position:absolute;inset:0;width:100%;height:100%;display:block}
 #dlg .av{width:58px;height:58px;border-radius:11px;background:#2f7de1;display:flex;align-items:center;justify-content:center;font-size:30px;flex:none;box-shadow:0 3px 8px rgba(0,0,0,.4)}
 #dlg b{color:#7dffb0;font-weight:800}
 #dlg p{font-size:14px;line-height:1.4}
+#intro{position:absolute;inset:0;z-index:30;display:none;align-items:center;justify-content:center;cursor:pointer}
+#intro .lb{position:absolute;left:0;right:0;height:9vh;background:#000}
+#intro .lb.t{top:0} #intro .lb.b{bottom:0}
+#intro .card{position:relative;display:none;text-align:center;max-width:640px;padding:0 24px}
+#intro .card h1{font-size:52px;color:#ffd23f;letter-spacing:4px}
+#intro .card h2{font-size:15px;color:#7dffb0;letter-spacing:3px;margin:8px 0 14px}
+#intro .card p{font-size:17px;line-height:1.6;color:#fff}
+#intro .skip{position:absolute;bottom:11vh;left:0;right:0;text-align:center;font-size:12px;color:#9fb6cc}
+#busted{position:absolute;inset:0;z-index:31;display:none;align-items:center;justify-content:center;flex-direction:column;background:rgba(20,0,0,.72);pointer-events:none}
+#busted h1{font-size:72px;color:#ff3d00;letter-spacing:6px}
+#busted p{font-size:16px;color:#fff;margin-top:8px}
+#phone{position:absolute;top:86px;right:14px;z-index:12;width:270px;display:none;background:rgba(10,10,24,.94);border:2px solid #2f7de1;border-radius:18px;padding:12px 14px;font-size:13px;line-height:1.5}
+#phone h3{color:#7dffb0;font-size:14px;margin-bottom:8px}
+#phone .msg{margin-bottom:8px} #phone .msg b{color:#ffd23f} #phone .msg span{color:#9fb6cc;font-size:11px}
 #br{right:14px;bottom:14px;text-align:right;width:290px}
 #speed{font-size:60px;font-weight:900;line-height:.9;color:#fff;text-shadow:0 3px 8px rgba(0,0,0,.6)}
 #speed small{font-size:16px;font-weight:700}
@@ -207,7 +221,7 @@ body.shot-shop #shop .box{width:470px}
   <div class="row"><div class="av" style="background:#7c5cff">N</div><div style="flex:1"><b>Nara</b> · Lookout<br><span style="color:#cfe6ff">Eyes out · marks map 20s</span><br><span class="cd" id="cd-c">[C] READY</span></div></div>
 </div>
 
-<div class="hud" id="controls"><b>[WASD]</b> drive / walk · <b>[SPACE]</b> handbrake · <b>[SHIFT]</b> nitro<br><b>[F]</b> exit / enter / steal car · <b>[CLICK]</b> shoot<br><b>[M]</b> map · <b>[G]</b> garage · <b>[E]</b> garage shop · <b>[R]</b> radio · <b>[S]</b> save · <b>[P]</b> pause · <b>[T]</b> day / night · <b>[Z/X/C]</b> crew<br>Auto-drive ON until you steer.</div>
+<div class="hud" id="controls"><b>[WASD]</b> drive / walk · <b>[SPACE]</b> handbrake · <b>[SHIFT]</b> nitro<br><b>[F]</b> exit / enter / steal car · <b>[CLICK]</b> shoot<br><b>[M]</b> map · <b>[G]</b> garage · <b>[E]</b> garage shop · <b>[R]</b> radio · <b>[S]</b> save · <b>[P]</b> pause · <b>[O]</b> phone · <b>[T]</b> day / night · <b>[Z/X/C]</b> crew<br>Auto-drive ON until you steer.</div>
 <div id="touch"><div id="joy"><div id="joyknob"></div></div><div class="tbtn" id="btnFire">FIRE</div><div class="tbtn" id="btnBrake">BRAKE</div><div class="tbtn" id="btnNitro">NITRO</div><div class="tbtn" id="btnEnter">ENTER</div><div class="tbtn" id="btnMap">MAP</div><div class="tbtn" id="btnShop">SHOP</div></div>
 
 <div class="hud" id="bl">
@@ -268,11 +282,18 @@ body.shot-shop #shop .box{width:470px}
   <h2>An original open-world crime game · by brillianagent · starring Raka</h2>
   <p style="color:#ffd23f">Raka is out, and Dara has one last plan: eight jobs across Senja Bay — from the Marina Pier to the boat that sails at dawn. Pull them off and the city is yours. The SJPD will not make it easy.</p>
   <p>Drive and walk the Miramar Strip. Traffic, pedestrians, carjacking, a wanted level, SJPD police, helicopter, roadblocks, 8 story missions, a crew with usable abilities, garage shop, nitro boost, saves and radio — all in one static page, no network needed.</p>
-  <p style="margin-top:8px;color:#ffd23f"><b>WASD drive/walk · F exit/enter/steal · CLICK shoot · M map · G garage · E shop · SHIFT nitro · T day/night · R radio · S save · Z/X/C crew abilities</b></p>
+  <p style="margin-top:8px;color:#ffd23f"><b>WASD drive/walk · F exit/enter/steal · CLICK shoot · M map · G garage · E shop · SHIFT nitro · T day/night · R radio · S save · Z/X/C crew abilities · O phone</b></p>
   <button id="startbtn">▶ &nbsp;START ENGINE</button>
   <div id="contbtn" style="margin-top:10px;font-size:13px;color:#7dff8a"></div>
 </div></div>
 
+<div id="intro"><div class="lb t"></div><div class="lb b"></div>
+<div class="card" id="introcard0"><h1>SENJA BAY</h1><h2>A MIRAMAR STRIP STORY</h2><p>An original open-world crime game.</p></div>
+<div class="card" id="introcard1"><h1 style="font-size:34px">TWO YEARS AGO</h1><h2>RAKA WALKS FREE</h2><p>Raka walked out of prison with nothing but a name and a debt. The city had moved on. Dara had not.</p></div>
+<div class="card" id="introcard2"><h1 style="font-size:34px">TONIGHT</h1><h2>ONE LAST PLAN · EIGHT JOBS</h2><p>Dara has one last plan: eight jobs across Senja Bay — from the Marina Pier to the boat that sails at dawn. Pull them off, and the city is yours.</p></div>
+<div class="skip">CLICK OR PRESS ENTER TO SKIP</div></div>
+<div id="busted"><h1>BUSTED</h1><p id="bustedsub">Caught by the SJPD</p><p style="color:#ffd23f" id="bustedfee"></p></div>
+<div id="phone"><h3>📱 SENJA — MESSAGES</h3><div id="phonemsgs"></div><p style="color:#9fb6cc;font-size:11px">Press O to close</p></div>
 <script src="three.min.js"></script>
 <script>
 window.__started=false;
@@ -906,6 +927,20 @@ const MISSIONS=[
   {n:7, code:'PIER STANDOFF', title:'Disable 3 SJPD units', sub:'Click to shoot — watch your ammo', next:'Disable SJPD units: 0 / 3', time:180, reward:3000, rep:120, who:'Nara', role:'LOOKOUT · CREW', text:'They set a trap at the pier. You have the Mako — click to shoot and disable three units. Make every round count.', done:'Three units down and the pier is quiet. They will not trap you twice.', cps:[{x:50,z:-100}]},
   {n:8, code:'THE BOAT', title:'Reach the boat before it sails', sub:'Final job — 4 stars, no turning back', next:'Reach the boat at Marina Pier', time:150, reward:5000, rep:200, who:'Dara', role:'FIXER · SENJA BAY', text:'The boat sails in two minutes! Shake that chopper and get to the pier — the tide waits for no one, Raka.', done:'The boat is yours. Senja Bay is yours, Raka.', cps:[{x:50,z:-138}]},
 ];
+const BANTER=[
+["Eyes on the road, Raka. The pier is that way — do not scratch my car.","You nervous? The first job is always the worst. After this it is just driving.","Almost there. Park it clean, walk away clean."],
+["They are right behind us. Next left — lose them in the alleys.","Hold still. If they do not see you, the stars drop.","Clear. Told you — patience beats horsepower."],
+["The buyer hates scratches. Drive like the car is made of glass.","Pasar Malam is ahead. Do not stop for anyone.","One more turn. Deliver it and we are eating tonight."],
+["Four gates. My money is on you — do not make me regret it.","You are lifting too early! Foot down, Raka!","Last gate! Show them what the Arunika can do!"],
+["Plates are burned, Raka. Get to my garage and I will fix you up.","After this you are driving a ghost. Nobody is looking for fresh plates.","Almost home. Park it on the platform."],
+["Three drops. Bukit Neon first — do not keep them waiting.","Second drop is at the pier. The night is still young.","Last package. Then we disappear before dawn."],
+["Trap at the pier. Three units — make every round count.","One down! Keep the pressure on!","Last one. Finish it and the pier is ours."],
+["The boat sails in two minutes! Shake that chopper!","I can see the marina lights. Do not stop now!","There she is — the boat. Go, Raka, go!"]];
+const PHONE_MSGS=[
+['Dara','Raka. Eight jobs. One night. Do not make me regret bailing you out.','08:12'],
+['Sinta','The Arunika is tuned and waiting. Try not to scratch my paint job.','08:14'],
+['Bara','Garage is open all night. Bring the car home in one piece.','08:20'],
+['Nara','SJPD has two units on the boulevard. Eyes open, Raka.','08:31']];
 let S={ money:2500, respect:0, mission:0, cp:0, health:100, armour:50, condition:100, fuel:82, wanted:0, weapon:2, ammo:[Infinity,72,150,40,0], radio:0, completed:0, paint:0xff6a2a, armourOwned:false, ownedPaints:[0xff6a2a], victory:false };
 function saveGame(){ try{ localStorage.setItem(SAVE_KEY, JSON.stringify({money:S.money,respect:S.respect,mission:S.mission,completed:S.completed,health:S.health,condition:S.condition,paint:S.paint,armour:S.armour,armourOwned:S.armourOwned,ownedPaints:S.ownedPaints,ammo:S.ammo,victory:S.victory})); toast('💾 SAVED','Progress saved to this browser'); }catch(e){} }
 function loadGame(){ try{ const d=JSON.parse(localStorage.getItem(SAVE_KEY)||'null'); if(d){ S.money=d.money??S.money; S.respect=d.respect??S.respect; S.mission=Math.min(d.mission??0,7); S.completed=d.completed??0; S.health=d.health??100; S.condition=d.condition??S.condition; S.paint=d.paint??S.paint; S.armourOwned=d.armourOwned??false; S.armour=d.armour??S.armour; S.victory=d.victory??false; S.ownedPaints=Array.isArray(d.ownedPaints)&&d.ownedPaints.length?d.ownedPaints:[0xff6a2a]; if(Array.isArray(d.ammo)) S.ammo=d.ammo.map((a,i)=>(a===null||a===undefined)?(i===0?Infinity:WEAPONS[i].ammo):a); return true; } }catch(e){} return false; }
@@ -914,6 +949,7 @@ const hadSave=loadGame();
 let px=50, pz=80, heading=Math.PI, speed=28, autoT=10, elapsed=0, paused=false;
 let onFoot=false, wx=46, wz=84, wHeading=Math.PI;
 let missionTime=MISSIONS[0].time, missionActive=true, hiddenTimer=0, wantedTimer=0, coolTimer=0;
+let banterIdx=0, lastMission=-1;
 let toastTimer=0, shootCooldown=0, policeFireTimer=0, lastShotAt=0, driftT=0, clockBaseMin=18*60+47, autoDisabled=false;
 let vehicleName='ARUNIKA GT', vehicleColor=0xff6a2a;
 // crew abilities Z/X/C (cooldowns in seconds)
@@ -942,6 +978,7 @@ function useAbility(k){
 const keys={};
 function toast(main, sub){ const t=document.getElementById('toast'); t.innerHTML=main+(sub?'<small>'+sub+'</small>':''); t.style.display='block'; toastTimer=3; }
 function floatText(t){ const f=document.getElementById('float'); f.textContent=t; f.style.display='block'; f.style.opacity='1'; clearTimeout(f._t1); clearTimeout(f._t2); f._t1=setTimeout(()=>{ f.style.opacity='0'; },900); f._t2=setTimeout(()=>{ f.style.display='none'; },1400); }
+function say(who,role,text){ document.getElementById('dlgname').textContent=who; document.getElementById('dlgrole').textContent=role; document.getElementById('dlgtext').textContent=text; }
 function curMission(){ return MISSIONS[S.mission]; }
 function curCheckpoint(){ const m=curMission(); return m.cps[Math.min(S.cp, m.cps.length-1)]; }
 function setMarker(x,z){ marker.position.set(x,0,z); }
@@ -998,6 +1035,16 @@ function completeMission(){
   document.getElementById('dlgrole').textContent=m.role;
   document.getElementById('dlgtext').textContent=m.done||m.text;
 }
+let bustedActive=false;
+function showBusted(reason){
+  if(bustedActive) return; bustedActive=true; paused=true;
+  const fee=Math.min(200,S.money); S.money-=fee; updateHUD();
+  document.getElementById('bustedsub').textContent='Caught by the SJPD — '+reason;
+  document.getElementById('bustedfee').textContent=fee>0?('Bail paid: $'+fee+' · Woke up at Bara garage'):('No cash to take · Woke up at Bara garage');
+  document.getElementById('busted').style.display='flex';
+  sfxBoom();
+  setTimeout(()=>{ document.getElementById('busted').style.display='none'; bustedActive=false; paused=false; S.health=100; S.armour=50; onFoot=false; walker.visible=false; playerCar.visible=true; px=GARAGE.x; pz=GARAGE.z; heading=Math.PI; speed=0; playerCar.position.set(px,0,pz); playerCar.rotation.y=heading; failMission(reason); },2600);
+}
 function failMission(reason){
   toast('❌ JOB FAILED', reason+' — retrying Job '+curMission().n);
   missionTime=curMission().time; S.cp=0; S.wanted=0; document.getElementById('air').textContent='🚁 NO AIR UNIT'; S.health=Math.max(50,S.health);
@@ -1025,6 +1072,7 @@ function enterCar(){
 function exitCar(){
   onFoot=true; wx=px+3; wz=pz+3; wHeading=heading; walker.visible=true; playerCar.visible=true;
   speed=0; toast('🚶 ON FOOT','Press F near a car to steal it · CLICK to shoot');
+  if(!cashHintShown){ cashHintShown=true; setTimeout(()=>toast('💵 CASH STASHES','Gold stacks glow on the street — walk over one to grab $150'),2600); }
 }
 function stealCar(){
   const near=nearestTraffic(7);
@@ -1185,6 +1233,35 @@ function spawnExplosion(x,z,big,quiet){
   if(explosions.length>4){ const old=explosions.shift(); scene.remove(old.g); }
 }
 function showHitmark(){ const h=document.getElementById('hitmark'); h.style.display='block'; clearTimeout(h._t); h._t=setTimeout(()=>{ h.style.display='none'; },180); }
+// v19: cash stashes on foot + a pier gator (GTA chaos, from the funny-moments ref)
+let cashHintShown=false;
+const CASH_SPOTS=[[-100,120],[50,-130],[-50,60],[0,0],[100,60],[-100,-60]];
+const cashPickups=[];
+CASH_SPOTS.forEach(([x,z])=>{
+  const g=new THREE.Group();
+  const box=new THREE.Mesh(new THREE.BoxGeometry(1.4,0.5,0.9), new THREE.MeshBasicMaterial({color:0xffd23f}));
+  box.position.y=0.6; g.add(box);
+  const gl=new THREE.Sprite(new THREE.SpriteMaterial({map:glowTex,color:0x7dffb0,transparent:true,opacity:0.55,depthWrite:false}));
+  gl.position.y=0.9; gl.scale.set(4,4,1); g.add(gl);
+  g.position.set(x,0,z); scene.add(g); cashPickups.push({g,x,z,taken:false});
+});
+function checkCashPickups(){
+  if(!onFoot) return;
+  cashPickups.forEach(c=>{ if(c.taken) return; if(Math.hypot(wx-c.x,wz-c.z)<2.2){ c.taken=true; scene.remove(c.g); S.money+=150; updateHUD(); floatText('💵 CASH +$150'); sfxChime(); toast('💵 CASH GRABBED','+$150 — more stashes glow around the city'); } });
+}
+const gator=new THREE.Group();
+{ const body=new THREE.Mesh(new THREE.BoxGeometry(3.4,0.6,1.1), new THREE.MeshBasicMaterial({color:0x2e6b34})); body.position.y=0.5; gator.add(body);
+  const head=new THREE.Mesh(new THREE.BoxGeometry(1.1,0.45,0.9), new THREE.MeshBasicMaterial({color:0x357a3b})); head.position.set(2.1,0.5,0); gator.add(head);
+  const tail=new THREE.Mesh(new THREE.BoxGeometry(1.8,0.4,0.5), new THREE.MeshBasicMaterial({color:0x2e6b34})); tail.position.set(-2.4,0.5,0); gator.add(tail); }
+gator.position.set(100,0,-100); scene.add(gator);
+let gatorCd=0;
+function checkGator(dt){
+  if(!onFoot) return;
+  gatorCd=Math.max(0,gatorCd-dt);
+  const d=Math.hypot(wx-gator.position.x,wz-gator.position.z);
+  if(d<14){ const a=Math.atan2(wx-gator.position.x,wz-gator.position.z); gator.position.x+=Math.sin(a)*dt*3.2; gator.position.z+=Math.cos(a)*dt*3.2; gator.rotation.y=a; }
+  if(d<1.8 && gatorCd<=0){ gatorCd=3; S.health=Math.max(0,S.health-5); updateHUD(); floatText('🐊 GATOR BITE -5 HP'); toast('🐊 GATOR!','It bit you at the pier — keep your distance'); if(S.health<=0) showBusted('The gator got you first'); }
+}
 // input
 addEventListener('keydown',e=>{
   if((e.key==='u'||e.key==='U')&&!e.repeat){
@@ -1215,6 +1292,8 @@ addEventListener('keydown',e=>{
   if(k==='r' && !e.repeat){ S.radio=(S.radio+1)%RADIOS.length; document.getElementById('radio').textContent=RADIOS[S.radio]; }
   if(k==='m' && !e.repeat){ const ov=document.getElementById('mapov'); const open=ov.style.display!=='flex'; ov.style.display=open?'flex':'none'; document.body.classList.toggle('driving',!open); if(open) drawBigMap(); }
   if(k==='p' && !e.repeat){ paused=!paused; toast(paused?'⏸ PAUSED':'▶ RESUMED',''); }
+  if(introActive && (k==='enter'||k==='escape') && !e.repeat){ endIntro(); return; }
+  if(k==='o' && !e.repeat){ togglePhone(); }
   if(k>='1'&&k<='5'){ S.weapon=parseInt(k,10)-1; renderWeapons(); }
 });
 addEventListener('keyup',e=>{keys[e.key.toLowerCase()]=false;});
@@ -1260,9 +1339,30 @@ function drawBigMap(){
   if(eyesOutT>0){ c.fillStyle='#ff9f1c'; roadblocks.forEach(rb=>{ if(!rb.visible) return; c.save(); c.translate(280+(rb.position.x-px)*1.2,140+(rb.position.z-pz)*1.2); c.rotate(Math.PI/4); c.fillRect(-7,-7,14,14); c.restore(); }); }
   c.fillStyle='#2f7de1'; c.fillRect(280+(GARAGE.x-px)*1.2-6, 140+(GARAGE.z-pz)*1.2-6, 12, 12);
 }
+let introActive=false, introTimers=[];
+function startIntro(){
+  introActive=true; paused=true;
+  const ov=document.getElementById('intro'); ov.style.display='flex';
+  const show=i=>{ for(let j=0;j<3;j++) document.getElementById('introcard'+j).style.display=(j===i?'block':'none'); };
+  show(0);
+  introTimers=[setTimeout(()=>show(1),3000), setTimeout(()=>show(2),6000), setTimeout(()=>endIntro(),9500)];
+  ov.onclick=()=>endIntro();
+}
+function endIntro(){
+  if(!introActive) return; introActive=false; introTimers.forEach(clearTimeout); introTimers=[];
+  document.getElementById('intro').style.display='none'; paused=false;
+}
+function togglePhone(){
+  const p=document.getElementById('phone');
+  if(p.style.display==='block'){ p.style.display='none'; return; }
+  const m=curMission();
+  document.getElementById('phonemsgs').innerHTML='<div class="msg"><b>Dara</b> <span>now</span><br>'+m.text+'</div>'+PHONE_MSGS.map(x=>'<div class="msg"><b>'+x[0]+'</b> <span>'+x[2]+'</span><br>'+x[1]+'</div>').join('');
+  p.style.display='block';
+}
 document.getElementById('startbtn').addEventListener('click',()=>{
   document.getElementById('start').remove(); window.__started=true;
   document.getElementById('controls').style.display='block';
+  if(!S.victory) startIntro();
   if(S.victory){ missionActive=false; updateMissionHUD(); showVictory(); }
 });
 if(hadSave){ document.getElementById('contbtn').textContent='💾 Save found — Job '+(S.mission+1)+'/8 · $'+S.money.toLocaleString()+' · respect '+S.respect; }
@@ -1386,6 +1486,9 @@ function updateHUD(){
 function missionTick(dt){
   if(!missionActive) return;
   missionTime-=dt;
+  if(S.mission!==lastMission){ lastMission=S.mission; banterIdx=0; }
+  const mB=curMission(), elB=mB.time-missionTime;
+  if(banterIdx<3 && elB>[15,45,80][banterIdx]){ say(mB.who,mB.role,BANTER[S.mission][banterIdx++]); }
   const m=curMission();
   const cx=onFoot?wx:px, cz=onFoot?wz:pz;
   const cp=curCheckpoint();
@@ -1549,10 +1652,10 @@ function loop(now){
     const d=Math.hypot(dx,dz);
     if(tac==='FIRING'){
       if((c.userData.fireCd||0)>0) c.userData.fireCd-=dt;
-      if(d<18 && S.wanted>=2 && (c.userData.fireCd||0)<=0){ c.userData.fireCd=1.8; let dmg=S.armour>0?4:8; if(S.armourOwned) dmg=Math.ceil(dmg/2); if(S.armour>0) S.armour=Math.max(0,S.armour-dmg); else S.health=Math.max(0,S.health-dmg); floatText('🔫 SJPD FIRE -'+dmg+' HP'); if(S.health<=0){ S.health=100; S.armour=50; failMission('Raka was busted — you woke up at the garage'); } }
+      if(d<18 && S.wanted>=2 && (c.userData.fireCd||0)<=0){ c.userData.fireCd=1.8; let dmg=S.armour>0?4:8; if(S.armourOwned) dmg=Math.ceil(dmg/2); if(S.armour>0) S.armour=Math.max(0,S.armour-dmg); else S.health=Math.max(0,S.health-dmg); floatText('🔫 SJPD FIRE -'+dmg+' HP'); if(S.health<=0){ showBusted('You woke up at the garage'); } }
     } else if(tac!=='ROADBLOCK' && d<12 && S.wanted>=2){
       policeFireTimer+=dt;
-      if(policeFireTimer>1.2){ policeFireTimer=0; let dmg=S.armour>0?4:8; if(S.armourOwned) dmg=Math.ceil(dmg/2); if(S.armour>0) S.armour=Math.max(0,S.armour-dmg); else S.health=Math.max(0,S.health-dmg); if(S.health<=0){ S.health=100; S.armour=50; failMission('Raka was busted — you woke up at the garage'); } }
+      if(policeFireTimer>1.2){ policeFireTimer=0; let dmg=S.armour>0?4:8; if(S.armourOwned) dmg=Math.ceil(dmg/2); if(S.armour>0) S.armour=Math.max(0,S.armour-dmg); else S.health=Math.max(0,S.health-dmg); if(S.health<=0){ showBusted('You woke up at the garage'); } }
     }
   });
   // roadblocks when wanted>=3, placed ahead on the boulevard
@@ -1608,7 +1711,7 @@ function loop(now){
   if(SHOT==='onfoot-combat') spot.material.opacity=0; // heli circles the parked car here and its cone lands dead-centre in the chase frame
   spotDisc.visible=heli.visible; if(heli.visible) spotDisc.position.set(heli.position.x,0.15,heli.position.z);
   // heli bites: at 4+ stars the searchlight locks on every 5s for a little damage
-  if(S.wanted>=4 && heli.visible){ heliLockT+=dt; if(heliLockT>5){ heliLockT=0; S.health=Math.max(0,S.health-2); floatText('🚁 SEARCHLIGHT LOCK -2 HP'); toast('🚁 HELI LOCK','SJPD air unit is tracking you'); if(S.health<=0){ S.health=100; S.armour=50; failMission('Raka was busted — the heli never lost you'); } } } else heliLockT=0;
+  if(S.wanted>=4 && heli.visible){ heliLockT+=dt; if(heliLockT>5){ heliLockT=0; S.health=Math.max(0,S.health-2); floatText('🚁 SEARCHLIGHT LOCK -2 HP'); toast('🚁 HELI LOCK','SJPD air unit is tracking you'); if(S.health<=0){ showBusted('The heli never lost you'); } } } else heliLockT=0;
   rotor.rotation.y+=dt*18; wheel.rotation.z+=dt*0.15;
   marker.rotation.y+=dt*0.8; mkCyl.scale.set(1+Math.sin(elapsed*3)*0.15,1,1+Math.sin(elapsed*3)*0.15);
   if(flashLife>0){ flashLife-=dt; flash.lookAt(camera.position); if(flashLife<=0) flash.material.opacity=0; }
@@ -1695,6 +1798,7 @@ function loop(now){
   // blue-white halo follows the muzzle flash brightness (single place: covers shoot(), abilities and staging)
   flashHalo.material.opacity=flash.material.opacity*0.6;
   missionTick(dt);
+  checkCashPickups(); checkGator(dt);
   updateHUD();
   drawMinimap();
   renderer.render(scene,camera);
