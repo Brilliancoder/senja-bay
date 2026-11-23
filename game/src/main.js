@@ -75,14 +75,15 @@ function updateCamera(dt) {
   const rx = Math.cos(hd), rz = -Math.sin(hd);
   const [back, side, height, look, lookY] = shotCam || (onFoot ? [3.4, 0.8, 2.1, 8, 1.8] : [5.1, 1.05, 2.45, 8, 1.8]);
   const tx = cx - fx * back + rx * side, tz = cz - fz * back + rz * side;
-  if (camera.userData.snap) { camera.position.set(tx, height, tz); camera.userData.snap = false; }
-  else camera.position.lerp(new THREE.Vector3(tx, height, tz), 0.45);
+  const hy = height + airY; // follow the car up off a stunt ramp
+  if (camera.userData.snap) { camera.position.set(tx, hy, tz); camera.userData.snap = false; }
+  else camera.position.lerp(new THREE.Vector3(tx, hy, tz), 0.45);
   if (camShake > 0) {
     camera.position.x += (Math.random() - 0.5) * camShake * 0.5;
     camera.position.y += (Math.random() - 0.5) * camShake * 0.4;
     camShake = Math.max(0, camShake - dt * 1.4);
   }
-  camera.lookAt(cx + fx * look, lookY, cz + fz * look);
+  camera.lookAt(cx + fx * look, lookY + airY, cz + fz * look);
   const targetFov = onFoot ? 62 : (keys['shift'] && speed > 20 ? 70 : 62);
   if (Math.abs(camera.fov - targetFov) > 0.2) {
     camera.fov = lerp(camera.fov, targetFov, 0.08);
@@ -109,8 +110,8 @@ function setupShot(kind) {
     startMission(7); S.kills = 1;
   } else if (kind === 'fight') {
     S.money = 11200; S.rep = 380; S.respect = 380;
-    onFoot = true; walker.visible = true; wx = 1; wz = -22; wHeading = 0;
-    px = -4; pz = -40; heading = 0;
+    onFoot = true; walker.visible = true; wx = 50; wz = -166; wHeading = 0; // PIER STANDOFF at the pier: Raka on the end of Marina Pier, facing the units on the sand
+    px = 44; pz = -128; heading = 0;
     startMission(6); S.kills = 1;
   } else if (kind === 'pier') {
     S.money = 21300; S.rep = 540; S.respect = 540;
@@ -170,14 +171,15 @@ function stageShot(kind) {
     [[9, -4.6], [12, 9.6], [16, -4.4], [21, 9.8], [26, -4.8], [32, 9.4], [38, -4.5], [46, 9.7]].forEach(([a, s], i) => ped(i, a, s, i % 3 ? 0 : Math.PI));
     pin('UNIT DOWN · +15 REP', '#ffd94a');
   } else if (kind === 'fight') {
-    shotCam = [4.6, 1.2, 2.5, 12, 1.5];
-    cop(0, 15, 1.5, Math.PI / 2, 'FIRING'); spawnExplosion(police[0].position.x, police[0].position.z, false);
-    const c1 = cop(1, 22, -3.5, Math.PI - 0.5, 'FIRING');
+    shotCam = [4.6, 1.2, 2.9, 12, 1.9];
+    scene.children.forEach(o => { if (o.name === 'pierTip') o.visible = false; }); // fisherman + surf strollers sit right beside the camera
+    cop(0, 15, 8.5, Math.PI / 2, 'FIRING'); spawnExplosion(police[0].position.x, police[0].position.z, false);
+    const c1 = cop(1, 20, -5.5, Math.PI - 0.5, 'FIRING');
     c1.userData.officer.visible = true; c1.userData.officer.rotation.y = Math.atan2(wx - c1.position.x, wz - c1.position.z) - c1.rotation.y; // the partner out of the car, aiming back at Raka
-    spawnTracer(wx + f[0] * 0.9, 1.47, wz + f[1] * 0.9, c1.position.x, 1.1, c1.position.z); // from the two-handed gun's muzzle
-    at(gator, 9, -5.5, Math.PI * 0.7);
-    [[10, 6.2, 0.2], [14, -7.6, 0.4], [18, 6.6, 0], [27, -7.2, 0], [31, 6.4, Math.PI], [36, -7.4, 0.1]].forEach(([a, s, rt], i) => ped(i, a, s, rt));
-    at(traffic[0], 34, 2.6, Math.PI);
+    spawnTracer(wx + f[0] * 0.9, 1.87, wz + f[1] * 0.9, c1.position.x, 1.1, c1.position.z); // from the two-handed gun's muzzle (Raka stands on the 0.4 m deck)
+    at(gator, 4, -6.5, -1.3, -0.05); // in the shallows beside the pier, belly under the water
+    [[9, 6, 0.2], [13, -7, 0.4], [19, 8, 0], [33, -9, 0], [36, 6, Math.PI]].forEach(([a, s, rt], i) => ped(i, a, s, rt));
+    at(traffic[0], 46, -3, Math.PI / 2); // crossing the coastal road behind the units
     selectWeapon(2); pin('HIT · SJPD 34 HP', '#ff8a5a');
   } else if (kind === 'pier') {
     shotCam = [9.2, -1.2, 4.6, 24, 1.2]; playerCar.position.y = 0.4; // higher than v24: the Arunika is taller than the taxi and hid the boat
@@ -193,7 +195,7 @@ function stageShot(kind) {
     rain.visible = true; rain.material.opacity = 0.6; rain.position.set(px, 0, pz);
   }
   playerCar.position.set(px, playerCar.position.y, pz); playerCar.rotation.y = heading;
-  walker.position.set(wx, 0, wz); walker.rotation.y = wHeading;
+  walker.position.set(wx, foot ? 0.4 : 0, wz); walker.rotation.y = wHeading; // fight: on the pier deck
   el('jobcard').classList.remove('on'); jcLeft = 0; // the 4.5 s job card would sit on every still
   el('toasts').innerHTML = '';
 }
@@ -265,6 +267,7 @@ function animate() {
     updateWanted(dt);
     updateClock(dt);
     updateContact();
+    updateFlow(dt);
     rainNext -= dt;
     if (rainNext <= 0 && !rainOn) { rainOn = true; rainT = 45; if (rain) rain.visible = true; toast('🌧 Rain rolling in over Senja Bay'); rainNext = 200 + Math.random() * 120; }
     if (rainOn) { rainT -= dt; updateRain(dt); if (rainT <= 0) { rainOn = false; if (rain) rain.visible = false; toast('🌤 Rain clearing — the sun is back'); } }
@@ -313,7 +316,7 @@ function updateRain(dt) {
   rain.geometry.attributes.position.needsUpdate = true;
 }
 /* ---------- boot ---------- */
-buildWorld(); buildRain();
+buildWorld(); buildRain(); buildFlow();
 playerCar = arunika = makeCarMesh(PAINTS[S.paint], true);
 playerCar.position.set(px, 0, pz);
 scene.add(playerCar);
@@ -324,7 +327,7 @@ for (let i = 0; i < 18; i++) spawnTrafficCar();
 for (let i = 0; i < 30; i++) spawnPed();
 spawnPolice();
 gator = makeGator();
-gator.position.set(100, 0, -100);
+gator.position.set(82, 0, -149); // lurks on the waterline east of Marina Pier
 gator.userData.biteT = 0;
 scene.add(gator);
 applyTimeOfDay('golden');

@@ -117,22 +117,23 @@ function makeWalker() {
   box(0.08, 0.1, 0.38, dark, 0, 1.47, 0.68); // slide, muzzle at z 0.87
   return g;
 }
-function makeGator() {
-  const g = new THREE.Group();
-  const skin = new THREE.MeshLambertMaterial({ color: 0x3a6a2a });
-  const belly = new THREE.MeshLambertMaterial({ color: 0xc9b06a });
-  const body = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.7, 3.4), skin);
-  body.position.y = 0.55; body.castShadow = true; g.add(body);
-  const head = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.5, 1.4), skin);
-  head.position.set(0, 0.5, 2.3); head.castShadow = true; g.add(head);
-  const snout = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.3, 0.9), belly);
-  snout.position.set(0, 0.38, 3.2); g.add(snout);
-  const tail = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.4, 2.6), skin);
-  tail.position.set(0, 0.45, -2.8); tail.castShadow = true; g.add(tail);
-  for (const ex of [-0.5, 0.5]) {
-    const eye = new THREE.Mesh(new THREE.SphereGeometry(0.14, 8, 6), new THREE.MeshBasicMaterial({ color: 0xffe066 }));
-    eye.position.set(ex, 0.82, 2.4); g.add(eye);
+function makeGator() { // one merged low-poly croc: long toothy snout, raised eyes, splayed legs, tapering ridged tail
+  const S0 = 0x41592a, R = 0x26361a, P = 0xcdbb8a, B = [];
+  B.push([1.1, 0.42, 2.4, S0, 0, 0.36, 0], [1.0, 0.08, 2.2, P, 0, 0.13, 0]); // body, pale belly
+  B.push([0.78, 0.34, 0.8, S0, 0, 0.34, 1.6], [0.56, 0.2, 1.3, S0, 0, 0.3, 2.6], [0.6, 0.08, 1.9, P, 0, 0.16, 2.3]); // head, snout, jaw
+  B.push([0.1, 0.06, 0.08, 0x1a1a10, -0.12, 0.42, 3.18], [0.1, 0.06, 0.08, 0x1a1a10, 0.12, 0.42, 3.18]); // nostrils
+  for (let z = 1.9; z < 3.2; z += 0.22) B.push([0.62, 0.07, 0.05, 0xf4f0e0, 0, 0.22, z]); // teeth poking out both sides
+  for (const s of [-1, 1]) {
+    B.push([0.22, 0.18, 0.26, S0, s * 0.26, 0.55, 1.5], [0.07, 0.09, 0.14, 0xffd23a, s * 0.37, 0.58, 1.55], [0.03, 0.09, 0.05, 0x101010, s * 0.41, 0.58, 1.58]); // eye bump, eye, slit
+    for (const z of [0.85, -0.85]) B.push([0.42, 0.22, 0.3, S0, s * 0.68, 0.2, z], [0.42, 0.07, 0.42, R, s * 0.92, 0.04, z + 0.08]); // splayed leg + foot
   }
+  [[0.8, 0.36, -1.6], [0.6, 0.3, -2.45], [0.42, 0.24, -3.3], [0.26, 0.18, -4.1], [0.14, 0.12, -4.8]].forEach(([w, h, z]) => B.push([w, h, 0.9, S0, 0, 0.18 + h / 2, z]));
+  for (let z = 1.1; z > -4.6; z -= 0.42) { // back ridges: two rows on the body, one down the tail
+    const t = z > -1.2 ? 1 : 0, y = z > -1.2 ? 0.6 : 0.36 + (z + 4.8) * 0.06;
+    for (const x of t ? [-0.24, 0.24] : [0]) B.push([0.12, 0.13, 0.22, R, x, y, z]);
+  }
+  const g = new THREE.Group(), m = new THREE.Mesh(mergeBoxes(B), PERSON_MAT);
+  m.castShadow = true; g.add(m);
   return g;
 }
 /* ---------- collision ---------- */
@@ -152,6 +153,12 @@ function resolveAABB(x, z, r) {
   }
   x = clamp(x, -140, 150); z = clamp(z, Math.abs(x - 50) < 2 ? -167 : -150, 150); // the pier runs on out over the water
   return { x, z };
+}
+// true when the straight line a→b crosses no building footprint (sampled every 1 m)
+function losClear(ax, az, bx, bz) {
+  const n = Math.ceil(d2(ax, az, bx, bz));
+  for (let i = 1; i < n; i++) { const x = ax + (bx - ax) * i / n, z = az + (bz - az) * i / n; if (SOLIDS.some(b => Math.abs(x - b.x) < b.hw && Math.abs(z - b.z) < b.hd)) return false; }
+  return true;
 }
 function circlePush(ax, az, bx, bz, minD) {
   const dx = bx - ax, dz = bz - az;
@@ -187,9 +194,10 @@ function updateWalker(dt) {
   // cash stashes: walk over to collect
   for (const c of cashStashes) {
     if (!c.taken && d2(wx, wz, c.x, c.z) < 2.2) {
-      c.taken = true; c.grp.visible = false;
-      S.money += 150; S.cashGot++;
-      toast('💰 Cash stash +$150'); floatText('+$150 CASH', '#ffd94a'); sfxChime();
+      const v = c.val || 150;
+      c.taken = true; c.grp.visible = false; c.back = 120;
+      S.money += v; S.cashGot++;
+      toast((c.val ? '💵 Collected the cash +$' : '💰 Cash stash +$') + v); floatText('+$' + v + ' CASH', '#ffd94a'); sfxChime();
     }
   }
 }
@@ -296,8 +304,8 @@ function updatePeds(dt) {
     const u = p.userData;
     if (u.down) { u.down = Math.max(0, u.down - dt); if (!u.down) placePed(p); continue; }
     if (!onFoot && Math.abs(speed) > 6 && d2(p.position.x, p.position.z, px, pz) < 2.4) { knockPed(p); continue; }
-    // flee from the player along the sidewalk
-    if (d2(p.position.x, p.position.z, ox, oz) < 12) {
+    // flee along the sidewalk only from a threat: wanted, or on foot with a gun out (slot 0 is fists)
+    if ((S.wanted > 0 || onFoot && curWeapon > 0) && d2(p.position.x, p.position.z, ox, oz) < 12) {
       u.dir = u.v ? (p.position.z > oz ? 0 : Math.PI) : (p.position.x > ox ? 1 : -1) * Math.PI / 2;
       u.fleeT = 1.2;
     }
@@ -327,14 +335,16 @@ function spawnPolice() {
   }
 }
 function updatePolice(dt) {
-  const activeN = S.wanted === 0 ? 0 : S.wanted <= 2 ? 2 : S.wanted === 3 ? 3 : S.wanted === 4 ? 4 : 5;
+  // 3★+ escalates: more units, spawned closer, more roadblocks; PIER STANDOFF sends its own waves (flow.js)
+  const hot = S.wanted >= 3, hunt = S.missionActive && S.mission === 1, waves = S.missionActive && S.mission === 6;
+  const activeN = waves ? 0 : [0, 2, 2, 4, 5, 5][S.wanted];
   police.forEach((c, i) => {
     const u = c.userData;
     if (!u.active) {
       if (i < activeN && S.started && !S.paused) {
         u.active = true; u.hp = 100;
-        const road = V_ROADS[Math.floor(Math.random() * V_ROADS.length)];
-        c.position.set(road, 0, clamp(pz + (Math.random() < 0.5 ? -1 : 1) * (55 + i * 14 + Math.random() * 10), -145, 145)); // staggered, not all at 70 m
+        const road = hot || hunt ? V_ROADS.reduce((a, b) => Math.abs(b - px) < Math.abs(a - px) ? b : a) : V_ROADS[Math.floor(Math.random() * V_ROADS.length)]; // high heat: on your street
+        c.position.set(road, 0, clamp(pz + (Math.random() < 0.5 ? -1 : 1) * ((hot || hunt ? 26 + i * 7 : 55 + i * 14) + Math.random() * 10), -145, 145)); // staggered, not all at 70 m
         c.visible = true;
       } else { c.visible = false; return; }
     }
@@ -349,9 +359,10 @@ function updatePolice(dt) {
     const dd = d2(c.position.x, c.position.z, tx, tz);
     u.tacticT -= dt;
     if (u.tacticT <= 0) {
-      u.tacticT = 2.5 + Math.random() * 2;
-      if (dd > 55) u.tactic = 'CLOSING IN';
-      else if (dd > 26) u.tactic = Math.random() < 0.5 ? 'CLOSING IN' : 'ROADBLOCK';
+      u.tacticT = hunt ? 1 : 2.5 + Math.random() * 2;
+      if (hunt) u.tactic = dd < 40 ? 'RAMMING' : 'CLOSING IN'; // LOSE THE HEAT: hunters ram, they don't stop to shoot
+      else if (dd > 55) u.tactic = hot && Math.random() < 0.3 ? 'ROADBLOCK' : 'CLOSING IN';
+      else if (dd > 26) u.tactic = Math.random() < (hot ? 0.75 : 0.5) ? 'ROADBLOCK' : 'CLOSING IN';
       else if (dd > 12) u.tactic = 'FIRING';
       else u.tactic = 'CLOSING IN';
     }
@@ -366,12 +377,16 @@ function updatePolice(dt) {
       const hold = 12;
       gx2 = tx - Math.sin(ph) * hold; gz2 = tz - Math.cos(ph) * hold;
       u.shootT -= dt;
-      if (u.shootT <= 0 && dd < 30) {
+      if (u.shootT <= 0 && dd < 30 && !losClear(c.position.x, c.position.z, tx, tz)) u.shootT = 0.3; // wall in the way: hold fire, look again soon
+      else if (u.shootT <= 0 && dd < 30) {
         u.shootT = 1.8;
         damagePlayer(S.armourPlating ? 2 : 4, 'SJPD fire');
         // tracer from police car to player
         spawnTracer(c.position.x, c.position.y + 1.1, c.position.z, tx, 1.2, tz);
       }
+    } else if (u.tactic === 'RAMMING') { // aim a car length ahead of Raka and floor it
+      gx2 = tx + Math.sin(heading) * 3; gz2 = tz + Math.cos(heading) * 3;
+      if (onFoot && dd < 3 && crashCd <= 0) { crashCd = 1.2; damagePlayer(10, 'SJPD ram'); floatText('RAMMED · -10 HP', '#ff8a5a'); }
     } else {
       // CLOSING IN: intercept 8m ahead of the player
       const fx = Math.sin(heading), fz = Math.cos(heading);
@@ -384,7 +399,7 @@ function updatePolice(dt) {
     while (dh > Math.PI) dh -= Math.PI * 2;
     while (dh < -Math.PI) dh += Math.PI * 2;
     if (!hold) c.rotation.y += clamp(dh, -2.4 * dt, 2.4 * dt);
-    const spd = u.tactic === 'ROADBLOCK' ? 26 : 24;
+    const spd = u.tactic === 'RAMMING' ? 29 : u.tactic === 'ROADBLOCK' ? 26 : 24;
     u.speed = hold ? Math.max(0, u.speed - 40 * dt) : Math.min(u.speed + 18 * dt, spd);
     u.officer.visible = hold && u.speed < 3;
     if (u.officer.visible) u.officer.rotation.y = ph - c.rotation.y; // face Raka
@@ -404,30 +419,35 @@ function updatePolice(dt) {
       }
     }
   });
-  // heli
-  if (S.wanted >= 3 && S.started && !S.paused) {
+  // heli: comes in at 3★, keeps circling 20 s after the heat drops below 3★; a second one joins at 5★
+  heliHold = hot ? 20 : S.wanted ? heliHold - dt : 0;
+  if (heliHold > 0 && S.started && !S.paused) {
     if (!heli) {
       heli = makeHeli(); heli.position.set(px + 10, 34, pz - 12); scene.add(heli);
       el('airTxt').textContent = '🚁 AIR UNIT ACTIVE';
       toast('🚁 SJPD air unit is overhead');
     }
+    if (S.wanted >= 5 && !heli2) { heli2 = makeHeli(); heli2.position.set(px - 20, 34, pz + 14); scene.add(heli2); toast('🚁🚁 Second air unit joins the hunt'); }
+    else if (S.wanted < 5 && heli2) { scene.remove(heli2); heli2 = null; }
     const hs = S.inSight || !S.lastSeen, hx = hs ? (onFoot ? wx : px) : S.lastSeen.x, hz = hs ? (onFoot ? wz : pz) : S.lastSeen.z;
-    heli.position.x = lerp(heli.position.x, hx + 10, dt * 0.7);
-    heli.position.z = lerp(heli.position.z, hz - 12, dt * 0.7);
-    heli.position.y = 22 + Math.sin(performance.now() / 900) * 2;
-    heli.rotation.y += dt * 0.4;
-    heli.userData.rotor.rotation.y += dt * 22;
-    heli.userData.rotor2.rotation.y += dt * 22;
-    if (S.wanted >= 4 && S.inSight) {
-      heliLockT -= dt;
-      if (heliLockT <= 0) {
-        heliLockT = 5;
+    [heli, heli2].forEach((h, k) => {
+      if (!h) return;
+      const f = dt * (S.wanted >= 4 ? 1.1 : 0.7);
+      h.position.x = lerp(h.position.x, hx + (k ? -12 : 10), f);
+      h.position.z = lerp(h.position.z, hz + (k ? 10 : -12), f);
+      h.position.y = 22 + Math.sin(performance.now() / 900 + k) * 2;
+      h.rotation.y += dt * 0.4;
+      h.userData.rotor.rotation.y += dt * 22;
+      h.userData.rotor2.rotation.y += dt * 22;
+      if (S.wanted >= 4 && S.inSight && (h.userData.lockT = (h.userData.lockT ?? (k ? 2.5 : 0)) - dt) <= 0) {
+        h.userData.lockT = 5;
         damagePlayer(2, 'Heli lock-on');
         toast('🚁 HELI LOCK-ON — take cover!');
       }
-    }
+    });
   } else if (heli) {
     scene.remove(heli); heli = null; el('airTxt').textContent = '';
+    if (heli2) { scene.remove(heli2); heli2 = null; }
   }
 }
 function updateGator(dt) {

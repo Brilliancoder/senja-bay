@@ -21,6 +21,7 @@ function startMission(i) {
   showJobCard('JOB ' + (i + 1) + '/8 · ' + m.name, actFor(i), m.obj, m.fixer + ' · $' + m.money.toLocaleString('en-US') + ' · +' + m.rep + ' REP');
   addPhoneMsg(m.fixer, m.obj + ' — $' + m.money.toLocaleString('en-US') + ' if you pull it off. Don\'t keep me waiting.');
   sfxHorn();
+  jobStart(i); // flow.js: rivals, pier waves, Dara's live lines
 }
 function say(who, txt) {
   const faces = { Dara: '👩', Sinta: '👩‍🦰', Bara: '👨‍🔧', Nara: '🕶️' };
@@ -64,8 +65,8 @@ function updateMission(dt) {
     else S.hidden = Math.max(0, S.hidden - dt * 2);
     if (S.hidden >= 15) { completeMission(); return; }
   } else if (S.mission === 6) {
-    // PIER STANDOFF: disable 3 units
-    if (S.kills >= 3) { completeMission(); return; }
+    // PIER STANDOFF: hold the pier through 3 waves (flow.js spawns them)
+    if (S.wave >= 3) { completeMission(); return; }
   } else {
     const cp = currentCheckpoint();
     if (cp && d2(cx, cz, cp.x, cp.z) < 9) {
@@ -106,9 +107,10 @@ function offerJob(i) {
   cpMarker.position.set(c[0], 0, c[1]); cpBeacon.position.set(c[0], 6, c[1]); cpMarker.visible = true;
   say(m.fixer, 'Job ' + (i + 1) + ' is ready when you are, Raka. Take a drive, then come find me — I\'m the ' + m.fixer[0] + ' on your map.');
   toast('📍 Free roam — meet ' + m.fixer + ' for job ' + (i + 1));
+  if (STORY_SMS[i]) setTimeout(() => storySms(STORY_SMS[i]), 6000);
 }
 function updateContact() {
-  if (S.offer < 0 || S.missionActive || !cpMarker.visible) return;
+  if (S.offer < 0 || S.missionActive || !cpMarker.visible || (race && race.side)) return;
   const c = contactOf(S.offer);
   if (d2(onFoot ? wx : px, onFoot ? wz : pz, c[0], c[1]) < 8) { const i = S.offer; S.offer = -1; startMission(i); }
 }

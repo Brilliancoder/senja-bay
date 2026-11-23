@@ -134,6 +134,7 @@ scripts in this order (they share globals):
 | File | What it does |
 | --- | --- |
 | `src/data.js` | Helpers, game state, the 8 missions, banter, crew, shop, world layout, save/rank |
+| `src/flow.js` | What makes jobs play differently: rival racers, pier waves, stunt ramps, street cash respawn, Dara's live lines, story texts, the free-roam side race |
 | `src/audio.js` | Procedural WebAudio: engine, siren, shots, boom |
 | `three.min.js` | Three.js (vendored) |
 | `src/world.js` | Sky, lights, roads, bay and pier, boat, city blocks, garage, props, night market, clock and time of day |

@@ -174,25 +174,30 @@ function makeCarMesh(colorHex, isPlayer) {
   }
   return g;
 }
+// street sedan shell shared by traffic + SJPD: 3 merged meshes (paint, glass, lamps) + 4 tyres, so 23 cars stay cheap
+const CAR_MATS = [new THREE.MeshPhongMaterial({ vertexColors: true, shininess: 70 }), new THREE.MeshPhongMaterial({ vertexColors: true, transparent: true, opacity: 0.62, shininess: 160, specular: 0xbbbbbb }), new THREE.MeshBasicMaterial({ vertexColors: true })];
+const TYRE = [new THREE.CylinderGeometry(0.4, 0.4, 0.3, 12), new THREE.MeshLambertMaterial({ color: 0x161616 })];
+function sedanShell(g, paint, W, L, cop) {
+  const hw = W / 2, hl = L / 2, D = 0x16161c, B = [], Gl = [], Lm = [];
+  B.push([W, 0.46, L, paint, 0, 0.56, 0], [W - 0.06, 0.1, 1.15, paint, 0, 0.83, hl - 0.62], [W * 0.4, 0.04, 1.05, paint, 0, 0.9, hl - 0.62]); // body, hood, hood crease
+  B.push([W - 0.06, 0.12, 0.85, paint, 0, 0.85, 0.48 - hl], [W - 0.2, 0.07, 1.45, paint, 0, 1.36, -0.2], [0.7, 0.14, 0.04, D, 0, 0.66, hl + 0.01]); // trunk, roof, grille
+  for (const s of [-1, 1]) {
+    for (const z of [0.62, -0.2, -1.0]) B.push([0.07, 0.46, 0.1, paint, s * (hw - 0.13), 1.1, z]); // A/B/C pillars
+    B.push([0.03, 0.06, L - 0.4, D, s * (hw + 0.01), 0.5, 0], [0.03, 0.4, 0.03, D, s * (hw + 0.01), 0.58, 0.15], [0.14, 0.1, 0.18, paint, s * (hw + 0.04), 1.0, 0.62]); // rub strip, door gap, mirror
+    B.push([W + 0.04, 0.18, 0.2, cop ? D : 0x2a2a30, 0, 0.36, s * (hl - 0.02)], [0.46, 0.12, 0.02, 0xf2f2f2, 0, 0.5, s * (hl + 0.04)]); // bumper, plate
+    for (const z of [hl - 0.75, 0.75 - hl]) B.push([0.04, 0.28, 0.28, 0xc8ccd4, s * (hw + 0.06), 0.4, z]); // hubcaps
+    Lm.push([0.42, 0.14, 0.06, 0xfff6d8, s * 0.58, 0.68, hl + 0.01], [0.42, 0.14, 0.06, 0xff2a2a, s * 0.58, 0.68, -hl - 0.01]);
+    if (cop) Lm.push([0.1, 0.1, 0.06, s < 0 ? 0xff2a2a : 0x2a6aff, s * 0.3, 0.42, hl + 0.11]); // grille strobes
+  }
+  if (cop) B.push([W + 0.02, 0.3, 2.3, D, 0, 0.6, -0.1], [1.2, 0.06, 0.32, D, 0, 1.43, -0.2], [1.3, 0.3, 0.08, D, 0, 0.52, hl + 0.14]); // black doors, light-bar base, push bar
+  Gl.push([W - 0.28, 0.22, 2.2, 0x1c2a40, 0, 1.0, -0.2], [W - 0.3, 0.24, 1.6, 0x1c2a40, 0, 1.21, -0.2]); // stepped glasshouse: raked screens front and back
+  [B, Gl, Lm].forEach((p, i) => { const m = new THREE.Mesh(mergeBoxes(p), CAR_MATS[i]); m.castShadow = !i; g.add(m); });
+  for (const [x, z] of [[-1, 1], [1, 1], [-1, -1], [1, -1]]) { const w = new THREE.Mesh(TYRE[0], TYRE[1]); w.rotation.z = Math.PI / 2; w.position.set(x * (hw - 0.05), 0.4, z * (hl - 0.75)); g.add(w); }
+}
 function makeTrafficCar(colorHex) {
   const g = new THREE.Group();
-  const paint = new THREE.MeshPhongMaterial({ color: colorHex, shininess: 60 });
-  const body = new THREE.Mesh(new THREE.BoxGeometry(1.9, 0.55, 4.2), paint);
-  body.position.y = 0.55; body.castShadow = true; g.add(body);
-  const cab = new THREE.Mesh(new THREE.BoxGeometry(1.7, 0.5, 2.0), new THREE.MeshPhongMaterial({ color: 0x111827, transparent: true, opacity: 0.6 }));
-  cab.position.set(0, 1.05, -0.2); g.add(cab);
+  sedanShell(g, colorHex, 1.9, 4.2);
   g.userData.driver = addDriver(g, makePerson(randPerson({ lite: true })));
-  const wg = new THREE.CylinderGeometry(0.4, 0.4, 0.3, 12);
-  const wm = new THREE.MeshLambertMaterial({ color: 0x161616 });
-  for (const [wx2, wz2] of [[-0.9, 1.4], [0.9, 1.4], [-0.9, -1.4], [0.9, -1.4]]) {
-    const w = new THREE.Mesh(wg, wm); w.rotation.z = Math.PI / 2; w.position.set(wx2, 0.4, wz2); g.add(w);
-  }
-  for (const hx of [-0.6, 0.6]) {
-    const hl = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.16, 0.08), new THREE.MeshBasicMaterial({ color: 0xfff6d8 }));
-    hl.position.set(hx, 0.66, 2.12); g.add(hl);
-    const tl = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.16, 0.08), new THREE.MeshBasicMaterial({ color: 0xff2a2a }));
-    tl.position.set(hx, 0.66, -2.12); g.add(tl);
-  }
   g.userData.wheels = []; // drivable once stolen (updateCar spins userData.wheels)
   return g;
 }
@@ -200,31 +205,14 @@ function makeTrafficCar(colorHex) {
 function addDriver(car, p) { poseSeated(p, true); p.position.set(-0.42, -0.66, 0.05); car.add(p); return p; }
 function makePoliceCar() {
   const g = new THREE.Group();
-  const white = new THREE.MeshPhongMaterial({ color: 0xf0f0f0, shininess: 70 });
-  const black = new THREE.MeshLambertMaterial({ color: 0x14141c });
-  const body = new THREE.Mesh(new THREE.BoxGeometry(1.95, 0.55, 4.4), white);
-  body.position.y = 0.55; body.castShadow = true; g.add(body);
-  const cab = new THREE.Mesh(new THREE.BoxGeometry(1.75, 0.5, 2.1), new THREE.MeshPhongMaterial({ color: 0x111827, transparent: true, opacity: 0.6 }));
-  cab.position.set(0, 1.05, -0.2); g.add(cab);
+  sedanShell(g, 0xf0f0f0, 1.95, 4.4, true);
   addDriver(g, makePerson(Object.assign({ skin: pick(SKINS), lite: true }, COP)));
   // the partner steps out and aims while the unit holds position to fire (updatePolice / stageShot show it)
   const off = makeCop(true); poseAim(off); off.position.set(-1.75, 0, 0.9); off.visible = false; g.add(off); g.userData.officer = off;
-  const stripe = new THREE.Mesh(new THREE.BoxGeometry(1.97, 0.22, 4.42), black);
-  stripe.position.y = 0.62; g.add(stripe);
-  const wg = new THREE.CylinderGeometry(0.41, 0.41, 0.32, 12);
-  const wm = new THREE.MeshLambertMaterial({ color: 0x141414 });
-  for (const [wx2, wz2] of [[-0.92, 1.45], [0.92, 1.45], [-0.92, -1.45], [0.92, -1.45]]) {
-    const w = new THREE.Mesh(wg, wm); w.rotation.z = Math.PI / 2; w.position.set(wx2, 0.41, wz2); g.add(w);
-  }
-  const barR = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.16, 0.5), new THREE.MeshBasicMaterial({ color: 0xff2a2a }));
-  barR.position.set(-0.4, 1.42, -0.2); g.add(barR);
-  const barB = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.16, 0.5), new THREE.MeshBasicMaterial({ color: 0x2a6aff }));
-  barB.position.set(0.4, 1.42, -0.2); g.add(barB);
+  const barR = new THREE.Mesh(new THREE.BoxGeometry(0.52, 0.16, 0.3), new THREE.MeshBasicMaterial({ color: 0xff2a2a }));
+  barR.position.set(-0.3, 1.54, -0.2); g.add(barR);
+  const barB = barR.clone(); barB.material = new THREE.MeshBasicMaterial({ color: 0x2a6aff }); barB.position.x = 0.3; g.add(barB);
   g.userData.barR = barR; g.userData.barB = barB;
-  for (const hx of [-0.6, 0.6]) {
-    const hl = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.16, 0.08), new THREE.MeshBasicMaterial({ color: 0xfff6d8 }));
-    hl.position.set(hx, 0.66, 2.22); g.add(hl);
-  }
   return g;
 }
 function makeHeli() {
@@ -300,10 +288,11 @@ function updateCar(dt) {
     if (p) {
       px = p.ax; pz = p.az;
       c.position.x = p.bx; c.position.z = p.bz;
-      if (Math.abs(speed) > 14 && crashCd <= 0) {
-        speed *= 0.5; S.condition = Math.max(0, S.condition - 4); camShake = 0.8; crashCd = 1.2;
-        floatText('RAMMED SJPD · -4%', '#ff8a5a');
-        addWanted(1);
+      const ram = c.userData.tactic === 'RAMMING'; // their ram: it costs you more, but no extra star
+      if ((Math.abs(speed) > 14 || ram) && crashCd <= 0) {
+        speed *= 0.5; S.condition = Math.max(0, S.condition - (ram ? 6 : 4)); camShake = ram ? 1.1 : 0.8; crashCd = 1.2;
+        if (ram) { heading += (Math.random() - 0.5) * 0.7; floatText('RAMMED BY SJPD · -6%', '#ff8a5a'); }
+        else { floatText('RAMMED SJPD · -4%', '#ff8a5a'); addWanted(1); }
       }
     }
   }

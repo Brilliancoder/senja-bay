@@ -11,7 +11,7 @@
   canvas.webgl { display: block; width: 100%; height: 100%; }
   .panel { position: fixed; z-index: 10; background: rgba(12,12,28,.82); border: 1px solid #f5c542; border-radius: 12px; color: #fff; padding: 8px 11px; font-size: 13px; line-height: 1.35; box-shadow: 0 4px 18px rgba(0,0,0,.45); }
   .gold { color: #f5c542; } .green { color: #4be07a; } .red { color: #ff5a5a; } .cyan { color: #5fd6ff; }
-  .small { font-size: 11px; color: #cfd2e0; } .dim { color: #9aa0b5; }
+  .small { font-size: 12.5px; color: #e8eaf2; } .dim { color: #9aa0b5; }
   b { font-weight: 700; }
   /* ---- top left: job ---- */
   #job { top: 12px; left: 12px; width: 312px; }
@@ -24,41 +24,41 @@
   #wanted { position: fixed; z-index: 10; top: 10px; left: 50%; transform: translateX(-50%); text-align: center; background: transparent; border: none; box-shadow: none; padding: 0; }
   #wanted .wt { font-size: 21px; font-weight: 900; letter-spacing: 4px; color: #ffd94a; text-shadow: 0 2px 8px #000; }
   #wanted .ws { font-size: 15px; letter-spacing: 2px; color: #ffe9a8; text-shadow: 0 2px 6px #000; }
-  #weather { top: 62px; left: 50%; transform: translateX(-50%); background: rgba(12,12,28,.72); border: 1px solid rgba(245,197,66,.55); border-radius: 20px; padding: 3px 14px; font-size: 12px; font-weight: 600; letter-spacing: .4px; white-space: nowrap; }
+  #weather { top: 62px; left: 50%; transform: translateX(-50%); background: rgba(12,12,28,.72); border: 1px solid rgba(245,197,66,.55); border-radius: 20px; padding: 3px 14px; font-size: 13px; font-weight: 700; letter-spacing: .4px; white-space: nowrap; }
   /* ---- top right: money / rank ---- */
   #money { position: fixed; z-index: 10; top: 12px; right: 12px; text-align: right; background: transparent; border: none; box-shadow: none; padding: 0; }
   #money .cash { font-size: 26px; font-weight: 900; color: #4be07a; text-shadow: 0 2px 8px #000; }
   #money .stars2 { font-size: 17px; color: #ffd94a; letter-spacing: 2px; text-shadow: 0 2px 6px #000; }
-  #money .air { font-size: 11px; color: #ffb14d; font-weight: 700; letter-spacing: 1px; text-shadow: 0 2px 6px #000; }
+  #money .air { font-size: 13px; color: #ffd27a; font-weight: 800; letter-spacing: 1px; background: rgba(12,12,28,.88); border: 1px solid #ff9f2e; border-radius: 8px; padding: 2px 8px; display: inline-block; margin-top: 2px; } #money .air:empty { display: none; }
   #rank { top: 76px; right: 12px; width: 268px; text-align: right; }
   #rankbar { height: 6px; background: #2a2a44; border-radius: 4px; margin-top: 4px; overflow: hidden; }
   #rankbarfill { height: 100%; width: 0%; background: linear-gradient(90deg,#5fd6ff,#4be07a); }
   /* ---- left: dispatch ---- */
   #dispatch { top: 168px; left: 12px; width: 262px; }
-  #dispatch .dh { font-weight: 800; letter-spacing: 1px; font-size: 12px; margin-bottom: 4px; }
+  #dispatch .dh { font-weight: 800; letter-spacing: 1px; font-size: 13px; margin-bottom: 4px; }
   #dispatch .du { display: flex; justify-content: space-between; padding: 2px 0; border-top: 1px solid rgba(255,255,255,.09); }
-  .tag { border-radius: 5px; padding: 0 6px; font-size: 10px; font-weight: 800; letter-spacing: .5px; }
+  .tag { border-radius: 5px; padding: 0 6px; font-size: 11.5px; font-weight: 800; letter-spacing: .5px; }
   .tag.close { background: #7a5cff; color: #fff; } .tag.fire { background: #ff5a5a; color: #fff; }
   .tag.road { background: #ff9f2e; color: #201400; } .tag.idle { background: #3a3a55; color: #cfd2e0; }
   /* ---- right: weapons + crew ---- */
   #weapons { position: fixed; z-index: 10; top: 130px; right: 12px; display: flex; gap: 6px; background: transparent; border: none; box-shadow: none; padding: 0; }
-  .wslot { width: 62px; background: rgba(12,12,28,.82); border: 1px solid #f5c542; border-radius: 10px; text-align: center; padding: 6px 2px 5px; font-size: 11px; }
+  .wslot { width: 62px; background: rgba(12,12,28,.82); border: 1px solid #f5c542; border-radius: 10px; text-align: center; padding: 5px 2px 4px; font-size: 12.5px; font-weight: 700; }
   .wslot.sel { background: rgba(245,197,66,.92); color: #141428; border-color: #fff; }
   .wslot .wi { font-size: 17px; } .wslot .wa { font-weight: 800; font-size: 12px; }
   #crew { position: fixed; z-index: 10; top: 196px; right: 12px; display: flex; gap: 6px; background: transparent; border: none; box-shadow: none; padding: 0; }
   #crew .ch { font-weight: 800; letter-spacing: 1px; font-size: 12px; margin-bottom: 4px; }
-  #crew .cm { display: flex; gap: 5px; align-items: center; background: rgba(12,12,28,.82); border: 1px solid #f5c542; border-radius: 10px; padding: 4px 7px 4px 4px; font-size: 11px; font-weight: 800; }
+  #crew .cm { display: flex; gap: 5px; align-items: center; background: rgba(12,12,28,.82); border: 1px solid #f5c542; border-radius: 10px; padding: 4px 7px 4px 4px; font-size: 13px; font-weight: 800; }
   #crew .av { width: 24px; height: 24px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 15px; color: #fff; flex: none; }
-  #crew .cd { font-size: 11px; color: #9aa0b5; }
+  #crew .cd { font-size: 12.5px; color: #cfd2e0; }
   #crew .ready { color: #4be07a; font-weight: 800; }
   /* ---- bottom left: minimap + bars ---- */
   #mmwrap { position: fixed; z-index: 10; bottom: 12px; left: 12px; background: transparent; border: none; box-shadow: none; padding: 0; }
   #minimap { border: 2px solid #f5c542; border-radius: 50%; background: #0c1226; box-shadow: 0 4px 18px rgba(0,0,0,.5); }
   #district { margin-top: 4px; font-weight: 800; color: #ffd94a; text-shadow: 0 2px 6px #000; font-size: 14px; }
-  #district .sub { color: #cfd2e0; font-weight: 600; font-size: 11px; text-shadow: 0 2px 6px #000; }
+  #district .sub { color: #e8eaf2; font-weight: 700; font-size: 13px; text-shadow: 0 2px 6px #000; }
   .bar { width: 210px; height: 9px; background: rgba(20,20,40,.85); border: 1px solid rgba(255,255,255,.25); border-radius: 5px; margin-top: 3px; overflow: hidden; }
   .bar > div { height: 100%; }
-  .barlbl { font-size: 10px; font-weight: 700; letter-spacing: 1px; color: #e8eaf2; text-shadow: 0 1px 4px #000; margin-top: 4px; }
+  .barlbl { font-size: 12px; font-weight: 700; letter-spacing: 1px; color: #e8eaf2; text-shadow: 0 1px 4px #000; margin-top: 4px; }
   /* ---- bottom center: dialogue ---- */
   #dlg { bottom: 12px; left: 50%; transform: translateX(-50%); width: 460px; min-height: 58px; display: flex; gap: 10px; align-items: flex-start; }
   #dlg .face { width: 44px; height: 44px; border-radius: 10px; background: linear-gradient(135deg,#7a5cff,#3d8bff); display: flex; align-items: center; justify-content: center; font-size: 24px; flex: none; }
@@ -74,7 +74,7 @@
   #prompt b { color: #ffd94a; }
   #reticle { position: fixed; z-index: 20; left: 50%; top: 46%; width: 22px; height: 22px; margin: -11px; border: 2px solid rgba(255,255,255,.85); border-radius: 50%; box-shadow: 0 0 4px #000; display: none; pointer-events: none; }
   #reticle::after { content: ''; position: absolute; left: 8px; top: 8px; width: 2px; height: 2px; background: #ff5a5a; }
-  #radio { font-size: 12px; font-weight: 700; color: #ffe9a8; text-shadow: 0 2px 6px #000; }
+  #radio { font-size: 13px; font-weight: 700; color: #ffe9a8; text-shadow: 0 2px 6px #000; }
   /* ---- toasts + floaters ---- */
   #toasts { position: fixed; top: 100px; left: 50%; transform: translateX(-50%); z-index: 40; text-align: center; pointer-events: none; }
   .toast { display: inline-block; background: rgba(12,12,28,.9); border: 1px solid #f5c542; color: #fff; border-radius: 9px; padding: 6px 14px; margin-top: 6px; font-weight: 700; font-size: 14px; box-shadow: 0 4px 14px rgba(0,0,0,.5); }
@@ -183,12 +183,13 @@
 <div id="mapov" class="overlay"><div class="mh">SENJA BAY — CITY MAP · M TO CLOSE</div><canvas id="bigmap" width="560" height="560"></canvas><div class="mf">Gold star = job checkpoint · Red = SJPD · Blue = you · Yellow = cash stashes</div></div>
 <div id="start" class="overlay on"><div class="t1">SENJA BAY</div><div class="t2">AN OPEN-WORLD CRIME STORY · MIRAMAR STRIP</div><div class="intro">Two years ago Raka walked out of the county jail with nothing but a busted sedan and a name to clear. Tonight, fixer Dara has one last plan: <b>eight jobs</b> across Senja Bay — from the Marina Pier to Pasar Malam — and a boat waiting at the end. The SJPD is watching every street. Your crew — Sinta, Bara and Nara — has your back. Drive fast, stay sharp, and don't get caught.</div><button id="startBtn">▶ &nbsp;START ENGINE</button><div class="keys">WASD / ARROWS drive · SHIFT nitro · V slow time · SPACE brake · F on foot / carjack · CLICK shoot · 1–5 weapons · G garage · E shop · Z / X / C crew · T day/night · R radio · M map · O phone · K save · P / ESC pause · U mute · on foot: WASD move + strafe, mouse / ←→ turn</div></div>
 <div id="intro" class="overlay"><div class="barT"></div><div class="barB"></div><div id="introCard"><div class="ic1" id="icKicker">SENJA BAY</div><div class="ic2" id="icTitle">TWO YEARS AGO — Raka walks free</div><div class="ic3" id="icBody">The gate clangs shut behind him. No money. No crew. Just a name the whole city still whispers.</div></div><div class="skip">CLICK OR PRESS ENTER TO SKIP</div></div>
-<div id="victory" class="overlay"><div class="vt">★ THE BOAT ★</div><div class="vs" id="victoryTxt">Eight jobs. One last plan. Raka steps onto the boat as the sun rises over Senja Bay — the SJPD sirens fading behind him. Dara's voice crackles over the radio: "You did it, Raka. The city is yours now."<br><br><b>FREE ROAM UNLOCKED</b> — keep driving, keep the heat on, keep Senja Bay yours.</div><button id="victoryBtn">KEEP DRIVING — FREE ROAM</button></div>
+<div id="victory" class="overlay"><div class="vt">★ THE BOAT ★</div><div class="vs" id="victoryTxt">Eight jobs. One last plan. Raka steps onto the boat as the city lights glow across Senja Bay — the SJPD sirens fading behind him. Dara's voice crackles over the radio: "You did it, Raka. The city is yours now."<br><br><b>FREE ROAM UNLOCKED</b> — keep driving, keep the heat on, keep Senja Bay yours.</div><button id="victoryBtn">KEEP DRIVING — FREE ROAM</button></div>
 <div id="busted" class="overlay"><div class="bt" id="bustedTitle">BUSTED</div><div class="bs" id="bustedTxt">The SJPD takes you in. Bail posted: $200.</div><button id="bustedBtn">WALK OUT — TRY AGAIN</button></div>
 <div id="pause" class="overlay"><div class="pt">PAUSED</div><button id="pResume">▶ RESUME</button><button id="pSave">💾 SAVE GAME</button><button id="pKeys">⌨ CONTROLS</button><button id="pQuit">⏏ QUIT TO TITLE</button><div class="keys" id="pauseKeys"></div></div>
 <div id="jobcard"><div class="jc-act" id="jcAct">ACT I · SMALL JOBS</div><div class="jc-title" id="jcTitle">JOB 1/8</div><div class="jc-obj" id="jcObj"></div><div class="jc-meta" id="jcMeta"></div></div>
 <div id="touch"><div id="joy"><div id="joyKnob"></div></div><div class="tbtn" id="btnFire">FIRE</div><div class="tbtn" id="btnBrake">BRAKE</div><div class="tbtn" id="btnNitro">NITRO</div><div class="tbtn" id="btnEnter">ENTER</div><div class="tbtn" id="btnMap">MAP</div><div class="tbtn" id="btnShop">SHOP</div></div>
 <script src="src/data.js"></script>
+<script src="src/flow.js"></script>
 <script src="src/audio.js"></script>
 <script src="three.min.js"></script>
 <script src="src/world.js"></script>

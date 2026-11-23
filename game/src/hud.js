@@ -92,11 +92,12 @@ function updateHUD() {
   el('jobTimer').textContent = Math.floor(tt / 60) + ':' + String(tt % 60).padStart(2, '0');
   el('jobObj').textContent = m.obj;
   if (S.offer >= 0) { el('jobName').textContent = 'FREE ROAM'; el('jobTimer').textContent = '--:--'; el('jobObj').textContent = 'Meet ' + MISSIONS[S.offer].fixer + ' for job ' + (S.offer + 1) + ' · ' + MISSIONS[S.offer].name; }
+  if (race && race.side) { el('jobName').textContent = 'SIDE RACE · SUNSET SPRINT'; el('jobTimer').textContent = '0:' + String(Math.ceil(race.t)).padStart(2, '0'); el('jobObj').textContent = 'Beat the rival to Marina Pier · $' + SIDE.pay; }
   el('jobStage').textContent = (Math.min(S.stage, m.cps.length - 1) + 1) + '/' + m.cps.length;
-  el('jobStageTxt').textContent = S.mission === 1 ? ('Hidden ' + Math.floor(S.hidden) + 's / 15s') : S.mission === 6 ? ('Units down ' + S.kills + '/3') : m.next;
-  const prog = S.mission === 1 ? S.hidden / 15 : S.mission === 6 ? S.kills / 3 : (S.stage + 1) / m.cps.length;
-  el('jobbarfill').style.width = clamp(prog * 100, 0, 100) + '%';
-  el('jobNext').textContent = S.mission === 1 ? 'Stay out of sight — 15s hidden' : S.mission === 6 ? 'Take down SJPD units — ' + S.kills + '/3' : m.next;
+  const js = jobStatus(m); // [stage line, next line, progress 0-1]
+  el('jobStageTxt').textContent = js[0];
+  el('jobbarfill').style.width = clamp(js[2] * 100, 0, 100) + '%';
+  el('jobNext').textContent = js[1];
   const ws = '★'.repeat(S.wanted) + '☆'.repeat(5 - S.wanted);
   const inSight = S.inSight, arrest = S.arrestT > 0.3 ? ' · <span style="color:#ff5a5a">⛓ ARREST ' + Math.round(S.arrestT / 2.5 * 100) + '%</span>' : '';
   el('wantedStars').innerHTML = ws + ' · ' + (S.wanted === 0 ? 'CLEAR' : S.wanted + (S.wanted === 1 ? ' STAR' : ' STARS')) + (inSight ? ' · <span style="color:#ff5a5a">● IN SIGHT</span>' + arrest : (S.wanted > 0 ? ' · <span style="color:#ffb02e">○ SEARCHING</span>' : ''));
@@ -115,10 +116,10 @@ function updateHUD() {
   if (act.length === 0) dh = '<div class="small">Streets are quiet — for now.</div>';
   else act.forEach((c, i) => {
     const dd = Math.round(d2(c.position.x, c.position.z, px2, pz2));
-    const tc = c.userData.tactic === 'FIRING' ? 'fire' : c.userData.tactic === 'ROADBLOCK' ? 'road' : c.userData.tactic === 'SEARCHING' ? 'idle' : 'close';
+    const tc = /FIRING|RAMMING/.test(c.userData.tactic) ? 'fire' : c.userData.tactic === 'ROADBLOCK' ? 'road' : c.userData.tactic === 'SEARCHING' ? 'idle' : 'close';
     dh += '<div class="du"><span>' + (c.userData.callsign || ('SJ-' + (100 + c.userData.id))) + '</span><span class="tag ' + tc + '">' + c.userData.tactic + '</span><span>' + dd + 'm</span></div>';
   });
-  if (heli) dh += '<div class="du"><span>AIR-1 · HELI</span><span class="tag close">SPOTLIGHT</span><span>' + Math.round(d2(heli.position.x, heli.position.z, px2, pz2)) + 'm</span></div>';
+  [heli, heli2].forEach((h, k) => { if (h) dh += '<div class="du"><span>AIR-' + (k + 1) + ' · HELI</span><span class="tag close">SPOTLIGHT</span><span>' + Math.round(d2(h.position.x, h.position.z, px2, pz2)) + 'm</span></div>'; });
   el('dispList').innerHTML = dh;
   el('dispNote').textContent = S.wanted >= 4 ? 'Full response — roadblocks and air support deployed.' : S.wanted >= 1 ? 'Units converging on your position.' : 'Streets are quiet — for now.';
   // crew
@@ -135,11 +136,14 @@ function updateHUD() {
   el('arTxt').textContent = Math.round(S.armour);
   el('arBar').style.width = clamp(S.armour, 0, 100) + '%';
   el('spdTxt').textContent = Math.round(Math.abs(speed) * 3.6);
+  el('spdTxt').parentNode.style.display = el('gearTxt').parentNode.style.display = onFoot ? 'none' : ''; // speed + gear only mean something behind the wheel
   const cn = carName(); el('carName').textContent = cn; el('carName').style.color = playerCar === arunika ? '#4be07a' : '#ffb14d';
   const tg = onFoot && !S.paused ? enterTarget() : null;
-  el('prompt').style.display = tg ? 'block' : 'none';
+  const cash = !S.paused && !tg && cashStashes.find(c => !c.taken && d2(px2, pz2, c.x, c.z) < (onFoot ? 7 : 12));
+  el('prompt').style.display = tg || cash ? 'block' : 'none';
   el('reticle').style.display = onFoot ? 'block' : 'none';
   if (tg) el('prompt').innerHTML = tg.steal ? '<b>[F]</b> STEAL · ' + tg.car.userData.model : '<b>[F]</b> ENTER · ' + (tg.car === arunika ? 'ARUNIKA GT' : tg.car.userData.model);
+  else if (cash) el('prompt').innerHTML = (onFoot ? '<b>💵</b> COLLECT THE CASH · walk over it' : '<b>[F]</b> GET OUT · COLLECT THE CASH') + ' · $' + (cash.val || 150);
   el('condTxt').textContent = Math.round(S.condition) + '%';
   el('condBar').style.width = clamp(S.condition, 0, 100) + '%';
   el('condBar').style.background = S.condition > 50 ? '#4be07a' : S.condition > 25 ? '#ff9f2e' : '#ff5a5a';
@@ -196,6 +200,15 @@ function drawMap(ctx, size, big) {
       ctx.fillStyle = '#ff5a5a';
       ctx.beginPath(); ctx.arc(X(c.position.x), Y(c.position.z), big ? 5 : 3, 0, 7); ctx.fill();
     }
+  }
+  ctx.fillStyle = '#ff9f2e';
+  for (const r of RAMPS) ctx.fillRect(X(r[0]) - 2, Y(r[1]) - 2, 4, 4);
+  if (race) for (const r of race.rivals) { ctx.beginPath(); ctx.arc(X(r.position.x), Y(r.position.z), big ? 5 : 3, 0, 7); ctx.fill(); }
+  if (sideOpen()) { // side-race blip: a cyan R
+    ctx.fillStyle = '#5fd6ff'; ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.arc(X(SIDE.x), Y(SIDE.z), big ? 10 : 6, 0, 7); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#0c1226'; ctx.font = '900 ' + (big ? 12 : 8) + 'px Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('R', X(SIDE.x), Y(SIDE.z) + 0.5);
   }
   ctx.fillStyle = '#d8d8e0';
   for (const t of traffic) ctx.fillRect(X(t.position.x) - 1.5, Y(t.position.z) - 1.5, 3, 3);

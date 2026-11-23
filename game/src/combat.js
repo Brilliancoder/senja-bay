@@ -88,7 +88,9 @@ function updateWanted(dt) {
   let near = 999;
   for (const c of police) if (c.userData.active && c.userData.hp > 0) near = Math.min(near, d2(c.position.x, c.position.z, tx, tz));
   S.nearestUnit = near;
-  S.inSight = S.wanted > 0 && near < SIGHT_R;
+  // at 3★+ the heli spotlight keeps you in sight while it is overhead: outrun it to break contact
+  const spot = S.wanted >= 3 && [heli, heli2].some(h => h && d2(h.position.x, h.position.z, tx, tz) < 22);
+  S.inSight = S.wanted > 0 && (near < SIGHT_R || spot);
   if (S.wanted > 0) {
     if (S.inSight || !S.lastSeen) { S.wantedDecay = 0; S.lastSeen = { x: tx, z: tz }; }
     else if ((S.wantedDecay = (S.wantedDecay || 0) + dt) > 9) {
@@ -154,7 +156,7 @@ function shoot() {
       const u = best.obj.userData;
       u.hp -= w.dmg;
       if (u.hp <= 0) {
-        u.hp = 0; u.respawnT = 14;
+        u.hp = 0; u.respawnT = S.wanted >= 3 ? 7 : 14; // high heat: the next unit is already on its way
         best.obj.visible = false;
         spawnExplosion(best.obj.position.x, best.obj.position.z, false);
         S.kills++;

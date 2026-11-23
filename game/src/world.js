@@ -552,21 +552,21 @@ function buildBeach() {
   const person = (x, z, ry, extra, pose) => { const p = makePerson(randPerson(extra)); p.position.set(x, 0, z); p.rotation.y = ry; if (pose) pose(p); scene.add(p); return p; };
   person(39.4, -156.6, 0.4, { shorts: true, long: false }, p => { poseSeated(p); p.position.y = -0.8; });
   person(63.1, -156.6, 0, { style: 'long', shirt: 0xd21f26, shorts: true, long: false }, p => { p.rotation.x = -Math.PI / 2; p.position.y = 0.16; });
-  person(57.5, -162.6, 1.9, { shirt: 0xf4f1ea }, p => poseStride(p, 0.2));
-  person(59.0, -162.9, -1.3, { style: 'hijab', scarf: 0x2e6fc2, shirt: 0x5fd6ff }, p => poseStride(p, -0.2));
+  person(57.5, -162.6, 1.9, { shirt: 0xf4f1ea }, p => { poseStride(p, 0.2); p.name = 'pierTip'; });
+  person(59.0, -162.9, -1.3, { style: 'hijab', scarf: 0x2e6fc2, shirt: 0x5fd6ff }, p => { poseStride(p, -0.2); p.name = 'pierTip'; });
   person(42, -160.4, Math.PI, { shorts: true, long: false }, p => poseStride(p, 0.6));
   person(66, -162.0, 0, { style: 'cap', capCol: 0x2e8b57, shirt: 0xf4f1ea, accent: 0x2e8b57 }); // warung seller
   person(73.4, -144.95, Math.PI, { shirt: 0xd21f26, shorts: true, long: false, style: 'cap', capCol: 0xffd94a }, p => { p.position.y = 2.52; }); // lifeguard
   // fisherman on the west edge, legs over the water (the boat is moored on the east side)
-  person(48.2, -167, -Math.PI / 2, { style: 'peci', shirt: 0x7a5cff, accent: 0xffd94a }, p => { poseSeated(p, true); p.position.y = -0.4; });
-  put(new THREE.CylinderGeometry(0.02, 0.03, 4, 5), M(0x3a2a1a), 46.4, 1.8, -167).rotation.z = 1.0;
+  person(48.2, -167, -Math.PI / 2, { style: 'peci', shirt: 0x7a5cff, accent: 0xffd94a }, p => { poseSeated(p, true); p.position.y = -0.4; p.name = 'pierTip'; });
+  Object.assign(put(new THREE.CylinderGeometry(0.02, 0.03, 4, 5), M(0x3a2a1a), 46.4, 1.8, -167), { name: 'pierTip' }).rotation.z = 1.0; // 'pierTip': the fight still hides these beside its camera
   for (const [x, z] of [[45, -171], [62, -168], [67, -182]]) person(x, z, Math.random() * 6, {}, p => { p.position.y = -1.5; }); // swimmers: heads above the water
   ring.castShadow = false;
   // beachgoers (baked, 1 draw call): sunbathers, strollers along the waterline, kids in the surf, a group by the warung
   const crowd = [];
   [[27.2, -156.6], [21.2, -150.6], [87.2, -152.6], [95.2, -158.6], [103.2, -151.6], [13.2, -157.6]].forEach(([x, z], i) => crowd.push(extra(x, z, 0.3 + i, 'lie', { shorts: true, long: false })));
   [[19, -151.5], [85, -153.5], [111, -158.4], [34, -150.6]].forEach(([x, z], i) => crowd.push(extra(x, z, i * 1.7, 'sit', { shorts: i % 2 === 0, long: false })));
-  for (let i = 0; i < 9; i++) { const x = 8 + i * 12 + (i % 2) * 3; if (Math.abs(x - 50) > 4) crowd.push(extra(x, -162.2 - (i % 3) * 0.6, i % 2 ? Math.PI / 2 : -Math.PI / 2, 'walk', { shorts: i % 3 === 0 })); }
+  for (let i = 0; i < 9; i++) { const x = 8 + i * 12 + (i % 2) * 3; if (Math.abs(x - 50) > 7) crowd.push(extra(x, -162.2 - (i % 3) * 0.6, i % 2 ? Math.PI / 2 : -Math.PI / 2, 'walk', { shorts: i % 3 === 0 })); }
   for (const [x, z] of [[24, -166], [30, -168], [82, -167], [90, -169], [98, -166], [16, -167]]) crowd.push(extra(x, z, Math.random() * 6, 'swim'));
   for (const [x, z, ry] of [[64.2, -159.4, 0.4], [67.6, -159.2, -0.3], [69.4, -160.4, -1.2]]) crowd.push(extra(x, z, ry + Math.PI, 'stand')); // queue at ES KELAPA
   for (const [x, z, ry] of [[36.5, -146, 2.6], [37.4, -146.8, -0.6], [92, -145, 1.6], [42.5, -150, 3.0], [60.5, -147.5, 0.4]]) crowd.push(extra(x, z, ry, 'stand'));
@@ -721,6 +721,17 @@ function buildCash() {
     grp.position.set(cx, 0, cz);
     scene.add(grp);
     cashStashes.push({ x: cx, z: cz, grp, taken: false });
+  }
+  // street cash: a banknote bundle under a green light column you can see from a block away
+  const noteMat = new THREE.MeshLambertMaterial({ color: 0x3fae5a, emissive: 0x1d5a2a }), beamMat = new THREE.MeshBasicMaterial({ color: 0x4be07a, transparent: true, opacity: 0.28, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
+  for (const [cx, cz, val] of CASH_PICKUPS) {
+    const grp = new THREE.Group();
+    for (let i = 0; i < 3; i++) { const b = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.2, 0.36), noteMat); b.position.set(0, 0.12 + i * 0.21, 0); b.rotation.y = i * 0.5; grp.add(b); }
+    const beam = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.9, 9, 10, 1, true), beamMat); beam.position.y = 4.5; grp.add(beam);
+    const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: GLOW_TEX, color: 0x4be07a, transparent: true, opacity: 0.6, blending: THREE.AdditiveBlending, depthWrite: false }));
+    glow.scale.set(3, 3, 1); glow.position.y = 0.8; grp.add(glow);
+    grp.position.set(cx, 0, cz); scene.add(grp);
+    cashStashes.push({ x: cx, z: cz, grp, taken: false, val });
   }
 }
 function buildCheckpoint() {
