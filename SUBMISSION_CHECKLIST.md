@@ -1,33 +1,35 @@
-# SENJA BAY — submission checklist (v22)
+# SENJA BAY — submission checklist (v24)
 
 ## Deliverables
 
 - [x] Public GitHub repo: Brilliancoder/senja-bay (branch main)
 - [x] `main.ts` at repo root (Node 22, builds the dossier)
 - [x] `vendor/makefun-game.ts` — kit file, byte-identical, unchanged
-- [x] `game/index.html` — the game, written fresh in the recorded
-      session (2,194 lines, ~123 KB, 3 inline script blocks)
+- [x] `game/index.html` — HUD markup and styles; it loads the 9 game scripts
+      `game/src/{data,audio,world,vehicles,actors,combat,missions,hud,main}.js`
+      in order (classic scripts that share globals)
 - [x] `game/three.min.js` — vendored Three.js r149 (local, no CDN)
 - [x] 4 screenshots in `screenshots/`, 1280x720 JPEG, each <= 256 KiB:
-  - 1-driving.jpg — Job 8/8 chase, 4 stars, full HUD
-  - 2-garage.jpg — Bara's garage shop open, all 7 items priced
-  - 3-mission.jpg — explosion + "UNIT DOWN · +15 REP"
-  - 4-night.jpg — genuine night, lit windows, lamps, taillights
+  - 1-chase-golden-hour.jpg (cover) — Job 8 chase at 4 stars: 4 SJPD units, one exploding, heli with its spotlight cone, peds on both sidewalks
+  - 2-on-foot-shootout.jpg — Raka on foot with SMG tracer and muzzle flash, a burning SJPD car, the gator, fleeing peds
+  - 3-pier-boat-sunset.jpg — the red Arunika GT on Marina Pier, the boat in a gold ring, low sun over the bay, Pantai Senja beach life (umbrellas, ES KELAPA warung, jukungs), 2★ SEARCHING with the minimap search circle
+  - 4-neon-night-rain.jpg — Night Run in the rain at the PASAR MALAM gate, SJPD lights in frame
 - [x] OSI licence (`LICENSE`)
 - [x] `.makefun/owner.json` — wallet claim (already on main)
 - [x] Repo About set: description, homepage, topics
 
 ## Verification (this session)
 
-- [x] node --check passes on all 3 inline script blocks
+- [x] node --check passes on all 9 `game/src/*.js` files (`shot/check-js.mjs`)
+- [x] `shot/test-v24.mjs` (fixed-timestep checks): 27/27 PASS, 0 page errors
 - [x] grep for forbidden names (comet/komet/solara/rockstar/vice city/
       lucia/jason) returns 0
 - [x] probe-play-v20.mjs: 4/4 PASS, 0 page errors
   - car stops at building wall (minPx 38.2)
-  - Raka stops at building wall (minWx 50.0)
+  - Raka stops at building wall (now walks W into it; the old A-key test never moved him)
   - police stay on roads (0/64 samples inside buildings)
   - traffic collision (min centre distance > 2.0)
-  - census: 8 traffic / 8 peds / 5 police
+  - census: 18 traffic / 30 peds / 5 police
 - [x] All 4 screenshots visually confirmed by reading the images
 - [x] HUD complete in every shot: wanted stars, money, weapons,
       minimap, speedo, job, dispatch, crew, dialogue
