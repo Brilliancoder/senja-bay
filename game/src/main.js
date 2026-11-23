@@ -2,11 +2,14 @@
 /* ================= BLOCK 3 — input, movement, collision, missions, AI, HUD, loop ================= */
 const keys = {};
 let focusLeft = 100, focusOn = false, rain = null, rainSpd = null, rainOn = false, rainT = 0, rainNext = 150;
+// letters by physical position (e.code) so WASD works on any keyboard layout (AZERTY, Cyrillic, Arabic...)
+const keyOf = e => /^Key[A-Z]$/.test(e.code) ? e.code.slice(3).toLowerCase() : e.key.toLowerCase();
 addEventListener('keydown', e => {
-  const k = e.key.toLowerCase();
+  const k = keyOf(e);
   keys[k] = true;
   if (k === ' ') e.preventDefault();
   if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(k)) e.preventDefault();
+  if (e.repeat) return; // a held key auto-repeats: toggles (F, P, Esc, M, E...) must fire once per press
   initAudio();
   if (!S.started) { if (k === 'enter') skipIntro(); return; }
   if (el('intro').classList.contains('on')) { if (k === 'enter') skipIntro(); return; }
@@ -30,7 +33,8 @@ addEventListener('keydown', e => {
     else togglePause();
   }
 });
-addEventListener('keyup', e => { keys[e.key.toLowerCase()] = false; if (e.key.toLowerCase() === 'v') focusOn = false; });
+addEventListener('keyup', e => { const k = keyOf(e); keys[k] = false; if (k === 'v') focusOn = false; });
+addEventListener('blur', () => { for (const k in keys) keys[k] = false; focusOn = false; }); // alt-tab eats the keyup: never leave W held
 addEventListener('mousemove', e => {
   if (onFoot && S.started && !S.paused) wHeading -= (e.movementX || 0) * 0.0045; // mouse-look on foot
 });
