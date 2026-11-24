@@ -13,6 +13,7 @@ function startMission(i) {
   S.stageTarget = m.cps.length;
   const cp = currentCheckpoint();
   if (cp) { cpMarker.position.set(cp.x, 0, cp.z); cpMarker.visible = true; cpBeacon.position.set(cp.x, 6, cp.z); }
+  if (cp && cp.foot) cashAt(cp.x, cp.z);
   if (i === 1) addWanted(Math.max(0, 2 - S.wanted));
   if (i === 6) addWanted(Math.max(0, 3 - S.wanted));
   if (i === 7) addWanted(Math.max(0, 4 - S.wanted));
@@ -22,6 +23,13 @@ function startMission(i) {
   addPhoneMsg(m.fixer, m.obj + ' — $' + m.money.toLocaleString('en-US') + ' if you pull it off. Don\'t keep me waiting.');
   sfxHorn();
   jobStart(i); // flow.js: rivals, pier waves, Dara's live lines
+}
+// make sure street cash lies within 3 m of (x, z): reuse the pickup farthest from there
+function cashAt(x, z) {
+  const st = cashStashes.filter(c => c.val);
+  if (st.some(c => !c.taken && d2(c.x, c.z, x, z) < 3)) return;
+  const c = st.reduce((a, b) => d2(b.x, b.z, x, z) > d2(a.x, a.z, x, z) ? b : a);
+  c.x = x; c.z = z; c.grp.position.set(x, 0, z); c.taken = false; c.grp.visible = true;
 }
 function say(who, txt) {
   const faces = { Dara: '👩', Sinta: '👩‍🦰', Bara: '👨‍🔧', Nara: '🕶️' };
@@ -69,10 +77,10 @@ function updateMission(dt) {
     if (S.wave >= 3) { completeMission(); return; }
   } else {
     const cp = currentCheckpoint();
-    if (cp && d2(cx, cz, cp.x, cp.z) < 9) {
+    if (cp && d2(cx, cz, cp.x, cp.z) < (cp.foot ? (onFoot ? 2.2 : -1) : 9)) { // a foot step only clears on foot, at the cash
       if (S.mission === 4) {
         // SWAP PLATES needs G at the garage (hint once: this runs every frame)
-        if (!S.gHint) { S.gHint = true; toast('🔧 Press G to swap plates'); }
+        if (!S.gHint) { S.gHint = true; toast('🔧 Press B to swap plates'); }
       } else if (S.stage < m.cps.length - 1) {
         S.stage++;
         const ncp = currentCheckpoint();
@@ -90,6 +98,9 @@ function completeMission() {
   S.money += m.money; S.rep += m.rep; S.respect = Math.min(550, S.respect + m.rep);
   S.missionActive = false;
   cpMarker.visible = false;
+  const left = S.missionTimer / m.time; // rating: 1★ done, 2★ with a quarter of the clock left, 3★ with half
+  S.ratings[S.mission] = Math.max(S.ratings[S.mission] || 0, 1 + (left > 0.25) + (left > 0.5));
+  if (S.mission === 3) S.races++;
   showJobCard('★ JOB COMPLETE ★', actFor(S.mission), m.name + ' — done.', '+$' + m.money.toLocaleString('en-US') + ' · +' + m.rep + ' REP', true);
   floatText('JOB COMPLETE · +$' + m.money.toLocaleString('en-US'), '#4be07a');
   say(m.fixer, m.done);
@@ -172,11 +183,11 @@ function useAbility(k) {
   if (!c || !S.started || S.paused) return;
   if (c.cdLeft > 0) { toast(c.name + ' is on cooldown (' + Math.ceil(c.cdLeft) + 's)'); return; }
   c.cdLeft = c.cd;
-  if (c.key === 'Z') {
+  if (c.name === 'Sinta') {
     S.wanted = Math.max(0, S.wanted - 1);
     toast('🔁 Sinta swapped the plates · -1★ wanted');
     floatText('-1★ WANTED', '#5fd6ff');
-  } else if (c.key === 'X') {
+  } else if (c.name === 'Bara') {
     S.condition = Math.min(100, S.condition + 40);
     toast('🔧 Bara quick fix · +40% condition');
     floatText('+40% CONDITION', '#4be07a');

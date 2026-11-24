@@ -23,8 +23,11 @@ const S = {
   condition: 100, nitro: 100, gear: 'N', paint: 'red', armourPlating: false,
   clock: 18.87, day: 1, night: false, radio: 0, radioOn: true, muted: false,
   started: false, paused: false, victory: false, busted: false, introDone: false,
-  cashGot: 0, heat: 0, wave: 0
+  heat: 0, wave: 0, slot: 1, waypoint: null
 };
+// career stats: saved per slot, reset by NEW GAME
+const STAT0 = () => ({ cashGot: 0, races: 0, cars: 0, dist: 0, topSpd: 0, playT: 0, earned: 0, seen: [], ratings: [], freeRoam: false });
+Object.assign(S, STAT0());
 const WEAPONS = [
   { name: 'Fists', icon: '✊', ammo: Infinity, dmg: 8, rate: 0.32 },
   { name: 'Pistol', icon: '🔫', ammo: 24, max: 24, dmg: 22, rate: 0.28 },
@@ -35,11 +38,11 @@ const WEAPONS = [
 let curWeapon = 1, shootCd = 0;
 /* ---------- missions ---------- */
 const MISSIONS = [
-  { name: 'FIRST GEAR', fixer: 'Dara', cps: [{ x: 50, z: -130 }], time: 180, money: 800, rep: 40, obj: 'Drive to Marina Pier', next: 'Reach the gold checkpoint', intro: 'Raka, first job is easy — just drive to the Marina Pier and follow the gold marker. Don\'t attract the SJPD yet.', done: 'Clean run, Raka. Dara\'s already got the next one lined up.' },
+  { name: 'FIRST GEAR', fixer: 'Dara', cps: [{ x: 6.6, z: 30, foot: true, txt: 'Press E to get out · grab the cash on foot' }, { x: 50, z: -130 }], time: 240, money: 800, rep: 40, obj: 'Drive to Marina Pier', next: 'Reach the gold checkpoint', intro: 'Raka, first job is easy — just drive to the Marina Pier and follow the gold marker. Don\'t attract the SJPD yet.', done: 'Clean run, Raka. Dara\'s already got the next one lined up.' },
   { name: 'LOSE THE HEAT', fixer: 'Nara', cps: [{ x: -50, z: -60 }], time: 120, money: 1200, rep: 60, obj: 'Shake the SJPD hunters, then stay hidden', next: 'Break their line of sight — 15s hidden', intro: 'SJPD hunters are on you and they ram, Raka. Outrun them, lose them in the back streets, then go dark till the heat burns out.', done: 'They lost you. Nara says the streets are yours again — for now.' },
   { name: 'PIER DELIVERY', fixer: 'Dara', cps: [{ x: -28, z: 60 }], time: 150, money: 1500, rep: 70, obj: 'Deliver the package to Pasar Malam', next: 'Reach the gold checkpoint', intro: 'A package for the night market. No questions, no stops, no cops. The buyer is waiting at Pasar Malam.', done: 'Delivered. The buyer paid in full — and he wants you for the next one too.' },
   { name: 'STREET RACE', fixer: 'Sinta', cps: [{ x: 50, z: -60 }, { x: 0, z: -60 }, { x: 0, z: 60 }, { x: 50, z: 60 }], time: 120, money: 2500, rep: 100, obj: 'Beat the rival crew through 4 checkpoints', next: 'Hit the next checkpoint', intro: 'A rival crew thinks they own the Strip. Four checkpoints, no rules. Sinta\'s riding shotgun — don\'t embarrass her.', done: 'You smoked them. Sinta\'s already spending your winnings.' },
-  { name: 'SWAP PLATES', fixer: 'Bara', cps: [{ x: -125, z: 134 }], time: 150, money: 1000, rep: 50, obj: 'Reach the garage and press G', next: 'Get to Bara\'s garage', intro: 'Your plates are burned — every SJPD unit has your tag. Get to Bara\'s garage and swap them before they box you in.', done: 'Fresh plates, clean record. Bara even threw in a wash.' },
+  { name: 'SWAP PLATES', fixer: 'Bara', cps: [{ x: -125, z: 134 }], time: 150, money: 1000, rep: 50, obj: 'Reach the garage and press B', next: 'Get to Bara\'s garage', intro: 'Your plates are burned — every SJPD unit has your tag. Get to Bara\'s garage and swap them before they box you in.', done: 'Fresh plates, clean record. Bara even threw in a wash.' },
   { name: 'NIGHT RUN', fixer: 'Dara', cps: [{ x: -50, z: -60 }, { x: 50, z: -130 }, { x: -100, z: 0 }], time: 180, money: 2200, rep: 90, obj: 'Make 3 drops across the city at night', next: 'Reach the next drop', intro: 'Three drops, one night, no headlights on the back streets. The city never sleeps, Raka — and neither do we.', done: 'All three drops made. Dara says you\'re the best runner she\'s ever had.' },
   { name: 'PIER STANDOFF', fixer: 'Nara', cps: [{ x: 50, z: -100 }], time: 180, money: 3000, rep: 120, obj: 'Hold Marina Pier against 3 SJPD waves', next: 'Hold the pier — survive 3 waves', intro: 'They\'re coming for the pier, Raka. Three waves, no backup, no mercy. Nara\'s got eyes on every approach — hold the line.', done: 'Three waves broken and the pier is still ours. Nara owes you a drink.' },
   { name: 'THE BOAT', fixer: 'Dara', cps: [{ x: 50, z: -157 }], time: 150, money: 5000, rep: 200, obj: 'Reach the boat at Marina Pier', next: 'Reach the gold checkpoint', intro: 'This is it, Raka. The boat is waiting at the far end of the pier. Eight jobs, one last drive — and the whole city behind you. Go.', done: 'Eight jobs. One last plan. The boat is yours.' }
@@ -77,9 +80,9 @@ const SHOP_ITEMS = [
 ];
 const PAINTS = { red: 0xd21f26, blue: 0x2e6fc2, gold: 0xe8a81c, green: 0x2e8b57 };
 const CREW = [
-  { name: 'Sinta', role: 'Driver', ab: 'Swap plates · -1★ wanted', key: 'Z', cd: 60, cdLeft: 0, color: '#3d8bff', letter: 'S' },
-  { name: 'Bara', role: 'Mechanic', ab: 'Quick fix · +40% condition', key: 'X', cd: 45, cdLeft: 0, color: '#ff5a5a', letter: 'B' },
-  { name: 'Nara', role: 'Lookout', ab: 'Eyes out · marks map 20s', key: 'C', cd: 30, cdLeft: 0, color: '#7a5cff', letter: 'N' }
+  { name: 'Sinta', role: 'Driver', ab: 'Swap plates · -1★ wanted', key: 'F', cd: 60, cdLeft: 0, color: '#3d8bff', letter: 'S', job: 3, bio: 'Wheelwoman from the Miramar Strip. Knows every back lane and a plate guy on every block.' },
+  { name: 'Bara', role: 'Mechanic', ab: 'Quick fix · +40% condition', key: 'G', cd: 45, cdLeft: 0, color: '#ff5a5a', letter: 'B', job: 4, bio: 'Runs the garage on Ocean Boulevard. Patches the Arunika GT on the road over the radio.' },
+  { name: 'Nara', role: 'Lookout', ab: 'Eyes out · marks map 20s', key: 'H', cd: 30, cdLeft: 0, color: '#7a5cff', letter: 'N', job: 1, bio: 'Watches the city from the rooftops. Calls out every SJPD unit within the grid.' }
 ];
 let eyesOutT = 0;
 // original model names for the street cars you can steal (indexed by traffic colour)
@@ -114,20 +117,28 @@ const CASH_PICKUPS = [[106.6, -30, 300], [93.4, 90, 250], [-106.6, 30, 300], [-5
 const V_ROADS = [-100, -50, 0, 50, 100];
 const H_ROADS = [-120, -60, 0, 60, 120];
 /* ---------- save / rank ---------- */
-function saveGame() {
-  try {
-    localStorage.setItem('senja-bay-save', JSON.stringify({ money: S.money, rep: S.rep, respect: S.respect, mission: S.offer >= 0 ? S.offer : S.mission, paint: S.paint, condition: S.condition, armourPlating: S.armourPlating }));
-    toast('💾 Game saved');
-  } catch (e) {}
+// three slots; slot 1 keeps the pre-v28 key so older saves still show up
+const slotKey = n => n === 1 ? 'senja-bay-save' : 'senja-bay-save-' + n;
+function readSlot(n) { try { return JSON.parse(localStorage.getItem(slotKey(n)) || 'null'); } catch (e) { return null; } }
+const latestSlot = () => [1, 2, 3].filter(readSlot).sort((a, b) => (readSlot(b).t || 0) - (readSlot(a).t || 0))[0] || 0;
+const jobsDone = () => Math.max(S.offer >= 0 ? S.offer : S.mission, S.ratings.filter(Boolean).length);
+function saveGame(n) {
+  if (n) S.slot = n;
+  const d = { money: S.money, rep: S.rep, respect: S.respect, mission: S.offer >= 0 ? S.offer : S.mission, paint: S.paint, condition: S.condition, armourPlating: S.armourPlating, t: Date.now(), district: districtAt(onFoot ? wx : px, onFoot ? wz : pz)[0] };
+  for (const k in STAT0()) d[k] = S[k];
+  try { localStorage.setItem(slotKey(S.slot), JSON.stringify(d)); toast('💾 Game saved · slot ' + S.slot); return true; } catch (e) { toast('⚠ Save failed — browser storage is full or blocked'); return false; }
 }
-function loadGame() {
-  try {
-    const d = JSON.parse(localStorage.getItem('senja-bay-save') || 'null');
-    if (!d) return false;
-    S.money = d.money; S.rep = d.rep; S.respect = d.respect; S.mission = d.mission || 0;
-    S.paint = d.paint || 'red'; S.condition = d.condition || 100; S.armourPlating = !!d.armourPlating;
-    return true;
-  } catch (e) { return false; }
+function loadGame(n) {
+  n = n || latestSlot();
+  const d = n && readSlot(n);
+  if (!d) return false;
+  S.slot = n; S.money = d.money; S.rep = d.rep; S.respect = d.respect; S.mission = d.mission || 0; S.offer = -1;
+  S.paint = d.paint || 'red'; S.condition = d.condition || 100; S.armourPlating = !!d.armourPlating;
+  Object.assign(S, STAT0()); for (const k in STAT0()) if (d[k] !== undefined) S[k] = d[k];
+  return true;
+}
+function newGame(n) {
+  Object.assign(S, { slot: n, money: 1500, rep: 0, respect: 0, mission: 0, offer: -1, paint: 'red', condition: 100, armourPlating: false, waypoint: null }, STAT0());
 }
 function rankFor(rep) {
   if (rep >= 520) return 'S · LEGEND';

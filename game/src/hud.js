@@ -29,10 +29,6 @@ function closeShop() {
   el('shop').style.display = 'none';
   shopOpen = false; S.paused = false;
 }
-function shopToggle() {
-  if (shopOpen) closeShop();
-  else openShop();
-}
 function buyItem(i) {
   const it = SHOP_ITEMS[i];
   if (S.money < it.price) { toast('Not enough cash — ' + it.name + ' costs $' + it.price); return; }
@@ -63,12 +59,13 @@ function togglePhone() {
     sfxClick();
   }
 }
+// M: the pause menu on its MAP tab; M again (on the map) closes it
 function toggleMap() {
-  const mv = el('mapov');
-  if (mv.classList.contains('on')) { mv.classList.remove('on'); S.paused = false; }
-  else { mv.classList.add('on'); S.paused = true; drawBigMap(); sfxClick(); }
+  if (el('pause').classList.contains('on')) { if (curTab === 'map') togglePause(false); else pauseTab('map'); }
+  else togglePause(true, 'map');
 }
 function cycleRadio() {
+  if (!SET.radio) { toast('📻 Radio is off — turn it on in SETTINGS'); return; }
   S.radio = (S.radio + 1) % RADIO_TRACKS.length;
   const t = RADIO_TRACKS[S.radio];
   el('radio').textContent = '♪ SENJA 101.9 — ' + t.name;
@@ -123,7 +120,7 @@ function updateHUD() {
   el('dispList').innerHTML = dh;
   el('dispNote').textContent = S.wanted >= 4 ? 'Full response — roadblocks and air support deployed.' : S.wanted >= 1 ? 'Units converging on your position.' : 'Streets are quiet — for now.';
   // crew
-  // crew chips: [Z] S ✓ — the ability text lives in the tooltip and the ability toast
+  // crew chips: [F] S ✓ — the ability text lives in the tooltip and the ability toast
   const crewSig = CREW.map(c => Math.ceil(Math.max(0, c.cdLeft))).join();
   if (crewSig !== el('crew').dataset.sig) {
     el('crew').dataset.sig = crewSig;
@@ -140,10 +137,15 @@ function updateHUD() {
   const cn = carName(); el('carName').textContent = cn; el('carName').style.color = playerCar === arunika ? '#4be07a' : '#ffb14d';
   const tg = onFoot && !S.paused ? enterTarget() : null;
   const cash = !S.paused && !tg && cashStashes.find(c => !c.taken && d2(px2, pz2, c.x, c.z) < (onFoot ? 7 : 12));
-  el('prompt').style.display = tg || cash ? 'block' : 'none';
   el('reticle').style.display = onFoot ? 'block' : 'none';
-  if (tg) el('prompt').innerHTML = tg.steal ? '<b>[F]</b> STEAL · ' + tg.car.userData.model : '<b>[F]</b> ENTER · ' + (tg.car === arunika ? 'ARUNIKA GT' : tg.car.userData.model);
-  else if (cash) el('prompt').innerHTML = (onFoot ? '<b>💵</b> COLLECT THE CASH · walk over it' : '<b>[F]</b> GET OUT · COLLECT THE CASH') + ' · $' + (cash.val || 150);
+  // context prompt: what E does here (always shown behind the wheel), plus B at Bara's garage
+  let pr = S.paused ? '' : tg ? (tg.steal ? '<b>[E]</b> STEAL · ' + tg.car.userData.model : '<b>[E]</b> ENTER · ' + (tg.car === arunika ? 'ARUNIKA GT' : tg.car.userData.model))
+    : cash ? (onFoot ? '<b>💵</b> COLLECT THE CASH · walk over it' : '<b>[E]</b> GET OUT · COLLECT THE CASH') + ' · $' + (cash.val || 150)
+    : onFoot ? '' : '<b>[E]</b> EXIT VEHICLE';
+  if (!S.paused && d2(px2, pz2, GARAGE.x, GARAGE.z) <= 22) pr += (pr ? ' · ' : '') + (S.mission === 4 && S.missionActive ? '<b>[B]</b> SWAP PLATES' : '<b>[B]</b> GARAGE SHOP');
+  if (onFoot && !S.drove && !S.paused) pr += '<div style="font-size:11px;font-weight:600;opacity:.85;margin-top:3px">WASD move · SHIFT sprint · MOUSE turn · CLICK shoot · <b>[E]</b> enter car</div>';
+  el('prompt').style.display = pr ? 'block' : 'none';
+  if (el('prompt').innerHTML !== pr) el('prompt').innerHTML = pr;
   el('condTxt').textContent = Math.round(S.condition) + '%';
   el('condBar').style.width = clamp(S.condition, 0, 100) + '%';
   el('condBar').style.background = S.condition > 50 ? '#4be07a' : S.condition > 25 ? '#ff9f2e' : '#ff5a5a';
@@ -153,6 +155,8 @@ function updateHUD() {
   el('focusBar').style.width = clamp(focusLeft, 0, 100) + '%';
   el('gearTxt').textContent = speed > 30 ? 'G4' : speed > 18 ? 'G3' : speed > 6 ? 'G2' : speed > 0.5 ? 'G1' : speed < -0.5 ? 'R' : 'N'; // from speed, so staged stills agree with the speedo
   const dist = districtAt(px2, pz2);
+  if (S.started && !shotMode && !S.seen.includes(dist[0])) S.seen.push(dist[0]);
+  if (S.waypoint && S.started && !S.paused && d2(px2, pz2, S.waypoint.x, S.waypoint.z) < 10) { S.waypoint = null; toast('📍 Waypoint reached'); sfxChime(); }
   el('district').innerHTML = dist[0] + '<div class="sub">' + dist[1] + ' · ' + (S.wanted > 0 ? 'HOT · ' + S.heat : 'NEUTRAL · ' + S.heat) + '</div>';
 }
 /* ---------- minimap / big map ---------- */
@@ -217,6 +221,24 @@ function drawMap(ctx, size, big) {
     ctx.beginPath(); ctx.arc(X(gator.position.x), Y(gator.position.z), big ? 4 : 2.5, 0, 7); ctx.fill();
   }
   const pxx = onFoot ? wx : px, pzz = onFoot ? wz : pz, ph = onFoot ? wHeading : heading;
+  if (big) {
+    ctx.font = '800 11px Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    for (const [n, x, z] of MAP_LABELS) { ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(8,8,20,.9)'; ctx.strokeText(n, X(x), Y(z)); ctx.fillStyle = '#e8eaf2'; ctx.fillText(n, X(x), Y(z)); }
+    const done = jobsDone(); // every story job: grey = done, gold ring = still to come (the live one is the gold dot above)
+    MISSIONS.forEach((m, i) => {
+      if (S.missionActive && i === S.mission) return;
+      const c = m.cps[m.cps.length - 1], x = X(c.x) + (i % 2 ? 7 : -7), y = Math.max(9, Y(c.z) - 9); // nudge: several jobs end at the pier (job 8 sits on the map's top edge)
+      ctx.fillStyle = i < done ? '#4a4e66' : '#141428'; ctx.strokeStyle = i < done ? '#9aa0b5' : '#f5c542'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.arc(x, y, 7.5, 0, 7); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = i < done ? '#cfd2e0' : '#ffd94a'; ctx.font = '900 10px Arial'; ctx.fillText(i + 1, x, y + 0.5);
+    });
+  }
+  if (S.waypoint) { // player-set waypoint: magenta diamond, dashed route line on the big map
+    const wpx = X(S.waypoint.x), wpy = Y(S.waypoint.z), r = big ? 8 : 5;
+    if (big) { ctx.setLineDash([5, 5]); ctx.strokeStyle = 'rgba(255,90,220,.8)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(X(pxx), Y(pzz)); ctx.lineTo(wpx, wpy); ctx.stroke(); ctx.setLineDash([]); }
+    ctx.fillStyle = '#ff5adc'; ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(wpx, wpy - r); ctx.lineTo(wpx + r, wpy); ctx.lineTo(wpx, wpy + r); ctx.lineTo(wpx - r, wpy); ctx.closePath(); ctx.fill(); ctx.stroke();
+  }
   ctx.fillStyle = '#ffd94a';
   ctx.beginPath();
   ctx.moveTo(X(pxx) + Math.sin(ph) * (big ? 9 : 6), Y(pzz) + Math.cos(ph) * (big ? 9 : 6));
@@ -231,7 +253,15 @@ function drawMinimap() {
 }
 function drawBigMap() {
   if (!bigCtx) bigCtx = el('bigmap').getContext('2d');
-  drawMap(bigCtx, 560, true);
+  drawMap(bigCtx, el('bigmap').width, true);
+}
+const MAP_LABELS = [['MARINA PIER', 50, -146], ['OCEAN BOULEVARD', -70, -128], ['DOWNTOWN GRID', -25, -32], ['PASAR MALAM', 0, 100], ['SUNSET ROW', 128, 12], ['OLD DOCKS', -128, -20], ["BARA'S GARAGE", -100, 148]];
+// click the pause map: set a waypoint there; click it again to clear it
+function setWaypoint(e) {
+  const c = el('bigmap'), x = e.offsetX / c.clientWidth * 320 - 160, z = e.offsetY / c.clientHeight * 320 - 160;
+  if (S.waypoint && d2(x, z, S.waypoint.x, S.waypoint.z) < 10) { S.waypoint = null; toast('📍 Waypoint cleared'); }
+  else { S.waypoint = { x, z }; toast('📍 Waypoint set — ' + districtAt(x, z)[0]); }
+  drawBigMap(); sfxClick();
 }
 /* ---------- intro / start ---------- */
 const INTRO_CARDS = [
@@ -260,20 +290,122 @@ function playIntro() {
 function skipIntro() {
   if (introTimer) { clearInterval(introTimer); introTimer = null; }
   el('intro').classList.remove('on');
-  el('start').classList.add('on');
   S.introDone = true;
+  showTitle();
 }
-function startGame() {
+function startGame() { // CONTINUE / LOAD / NEW GAME all land here once S holds the run to play
   initAudio();
   el('start').classList.remove('on');
-  S.started = true;
-  camera.userData.snap = true;
+  S.started = true; S.paused = false; S.victory = false; S.wanted = 0;
+  camera.userData.snap = true; seenMoney = S.money;
   if (PAINTS[S.paint] && paintMat) paintMat.color.setHex(PAINTS[S.paint]);
-  startMission(S.mission || 0);
-  toast('🚗 Welcome back to Senja Bay, Raka');
+  if (jobsDone() >= 8) { S.freeRoam = true; S.missionActive = false; S.offer = -1; cpMarker.visible = false; toast('🌇 Free roam — all eight jobs done. Senja Bay is yours'); }
+  else { startMission(S.mission || 0); toast('🚗 Welcome back to Senja Bay, Raka · slot ' + S.slot); }
 }
-el('startBtn').addEventListener('click', startGame);
+/* ---------- title menu: CONTINUE · NEW GAME · LOAD · SETTINGS + three save slots ---------- */
+const KEYS = [['WASD / ARROWS', 'drive · on foot: move + strafe'], ['MOUSE', 'look / turn on foot'], ['SHIFT', 'nitro · sprint on foot'], ['SPACE', 'handbrake'], ['E', 'enter / exit / steal a car'], ['CLICK', 'fire'], ['1–5', 'weapons'], ['F / G / H', 'crew: Sinta · Bara · Nara'],
+  ['B', 'Bara\'s garage: shop / swap plates'], ['C', 'horn'], ['V', 'hold to slow time'], ['R', 'radio station'], ['T', 'skip to dusk / night'], ['M', 'city map'], ['O', 'phone'], ['K', 'save game'], ['P / ESC', 'pause menu'], ['U', 'mute']];
+const playTime = s => { const m = Math.floor((s || 0) / 60); return Math.floor(m / 60) + 'h ' + String(m % 60).padStart(2, '0') + 'm'; };
+function slotHTML(n) {
+  const d = readSlot(n);
+  if (!d) return '<div class="sn">SLOT ' + n + '</div>EMPTY SLOT';
+  const j = Math.max(d.mission || 0, (d.ratings || []).filter(Boolean).length);
+  return '<div class="sn">SLOT ' + n + '<span>' + fmt$(d.money) + '</span></div>' + (d.district || 'Senja Bay') + ' · RANK ' + rankFor(d.rep || 0) +
+    '<br>' + (d.freeRoam || j >= 8 ? 'FREE ROAM · all 8 jobs done' : 'JOB ' + (j + 1) + '/8 · ' + MISSIONS[j].name) + '<br><span class="dim">⏱ ' + playTime(d.playT) + ' played</span>';
+}
+let tmMode = '', tmArm = 0; // tmMode: '' | 'load' (pick a slot) | 'new' (all full: pick one to overwrite)
+function showTitle() { el('start').classList.add('on'); tmMode = ''; tmArm = 0; renderTitle(); }
+function renderTitle(hint) {
+  const last = latestSlot(), d = last && readSlot(last);
+  el('tmCont').disabled = !last;
+  el('tmContSub').textContent = d ? 'slot ' + last + ' · ' + (d.district || 'Senja Bay') + ' · ' + fmt$(d.money) : 'no save yet';
+  el('tmSlots').innerHTML = [1, 2, 3].map(n => '<div class="slot' + (readSlot(n) ? '' : ' empty') + '" data-slot="' + n + '">' + slotHTML(n) + '</div>').join('');
+  el('tmR').classList.toggle('pick', !!tmMode);
+  el('tmLoad').classList.toggle('on', tmMode === 'load');
+  el('tmHint').textContent = hint || (tmMode === 'load' ? 'Pick a save slot on the right →' : tmMode === 'new' ? 'All three slots are in use — click one to overwrite it →' : '');
+}
+function beginNew(n) {
+  newGame(n); onFoot = false; walker.visible = false; px = 0; pz = 40; heading = 0; speed = 0; // job 1 opens on Ocean Boulevard
+  playerCar.position.set(px, 0, pz); playerCar.rotation.y = heading;
+  startGame();
+}
+el('tmCont').onclick = () => { if (loadGame()) startGame(); };
+el('startBtn').onclick = () => { const free = [1, 2, 3].find(n => !readSlot(n)); if (free) beginNew(free); else { tmMode = 'new'; tmArm = 0; renderTitle(); } };
+el('tmLoad').onclick = () => { tmMode = tmMode === 'load' ? '' : 'load'; tmArm = 0; renderTitle(); };
+el('tmSet').onclick = () => { const on = el('tmSettings').style.display !== 'block'; el('tmSettings').style.display = on ? 'block' : 'none'; el('tmIntro').style.display = on ? 'none' : ''; el('tmSet').classList.toggle('on', on); renderSettings(); };
+el('tmSlots').onclick = e => {
+  const s = e.target.closest('.slot'); if (!s) return;
+  const n = +s.dataset.slot;
+  if (!readSlot(n)) return tmMode === 'load' ? renderTitle('Slot ' + n + ' is empty — NEW GAME starts a story there') : beginNew(n);
+  if (tmMode !== 'new') { loadGame(n); return startGame(); }
+  if (tmArm === n) return beginNew(n);
+  tmArm = n; renderTitle('Slot ' + n + ' will be overwritten — click it again to confirm');
+};
 el('intro').addEventListener('click', skipIntro);
+/* ---------- settings (title menu): saved in their own localStorage key ---------- */
+const SET = Object.assign({ radio: true, shadows: true, radar: true }, (() => { try { return JSON.parse(localStorage.getItem('senja-bay-settings')) || {}; } catch (e) { return {}; } })());
+function applySettings() {
+  el('radio').style.display = SET.radio ? '' : 'none';
+  if (sun) sun.castShadow = SET.shadows;
+  el('minimap').style.display = SET.radar ? '' : 'none';
+}
+function renderSettings() {
+  const row = (k, label) => '<div class="row"><span>' + label + '</span><button class="tgl' + (SET[k] ? ' on' : '') + '" data-set="' + k + '">' + (SET[k] ? 'ON' : 'OFF') + '</button></div>';
+  el('tmSettings').innerHTML = row('radio', '📻 Radio · SENJA 101.9 ticker, R changes station') + row('shadows', '🌗 Shadows · off = smoother on slow PCs') + row('radar', '🧭 Radar · the minimap') +
+    '<div class="row" style="display:block"><b class="gold">⌨ CONTROLS</b><div style="font-size:12px;line-height:1.6;margin-top:3px;color:#cfd2e0">' + KEYS.map(([k, v]) => '<b>' + k + '</b> ' + v).join(' · ') + '</div></div>';
+}
+el('tmSettings').onclick = e => {
+  const k = e.target.dataset.set; if (!k) return;
+  SET[k] = !SET[k];
+  try { localStorage.setItem('senja-bay-settings', JSON.stringify(SET)); } catch (er) {}
+  applySettings(); renderSettings(); sfxClick();
+};
+/* ---------- pause menu tabs: MAP · STATS · CREW · CONTROLS · SAVE ---------- */
+let curTab = 'map';
+const RANK_AT = [110, 220, 330, 430, 520]; // rankFor() thresholds
+function pauseTab(t) {
+  curTab = t;
+  document.querySelectorAll('#ptabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
+  document.querySelectorAll('.ptab').forEach(p => p.classList.toggle('on', p.id === 'tab-' + t));
+  const tab = el('tab-' + t), done = Math.min(8, jobsDone()), here = [onFoot ? wx : px, onFoot ? wz : pz];
+  if (t === 'map') {
+    drawBigMap();
+    const dot = (c, txt) => '<div><i style="background:' + c + '"></i>' + txt + '</div>', wp = S.waypoint;
+    el('mapLegend').innerHTML = '<div class="pcol"><h3>SENJA BAY · CITY MAP</h3><div class="srow"><span>You are in</span><b class="gold">' + districtAt(here[0], here[1])[0] + '</b></div>' +
+      '<div class="srow"><span>Waypoint</span><b style="color:#ff5adc">' + (wp ? districtAt(wp.x, wp.z)[0] + ' · ' + Math.round(d2(here[0], here[1], wp.x, wp.z)) + ' m' : 'none') + '</b></div><div style="margin:8px 0" class="gold">🖱 Click the map to set a waypoint · click it again to clear</div>' +
+      dot('#ffd94a', 'You (arrow) · live job checkpoint (ringed dot)') + dot('#f5c542', 'Story jobs 1–8 (numbered · grey = done)') + dot('#3d8bff', 'Fixer to meet for the next job (initial)') + dot('#ff5adc', 'Your waypoint') +
+      dot('#ff5a5a', 'SJPD units (while wanted or Nara\'s eyes are out)') + dot('#5fd6ff', 'Side race (R)') + dot('#ff9f2e', 'Stunt ramps · rival racers') + dot('#4be07a', 'The gator') + dot('#8a2a26', 'Bara\'s garage (B)') + '</div>';
+  }
+  if (t === 'stats') {
+    const crew = CREW.filter(c => done > c.job).length;
+    const list = [['Story missions', done, 8], ['Street races won', S.races, 5], ['Cash collected', S.cashGot, 25], ['Districts visited', S.seen.length, 7], ['Crew recruited', crew, 3]];
+    const pct = Math.round(list.reduce((a, [, v, n]) => a + Math.min(1, v / n), 0) / list.length * 100), next = RANK_AT.find(r => r > S.rep);
+    const row = (a, b) => '<div class="srow"><span>' + a + '</span><b>' + b + '</b></div>';
+    tab.innerHTML = '<div class="pcol"><h3>COMPLETION</h3><div class="pct">' + pct + '%</div><div class="dim" style="margin-bottom:8px">of Senja Bay done</div>' +
+      list.map(([n, v, max]) => row(n, Math.min(v, max) + ' / ' + max) + '<div class="pbar"><div style="width:' + Math.min(100, v / max * 100) + '%"></div></div>').join('') + '</div>' +
+      '<div class="pcol"><h3>MISSION RATINGS</h3>' + MISSIONS.map((m, i) => row((i + 1) + '. ' + m.name, S.ratings[i] ? '<span class="gold">' + '★'.repeat(S.ratings[i]) + '☆'.repeat(3 - S.ratings[i]) + '</span>' : '<span class="dim">—</span>')).join('') + '<div class="dim" style="margin-top:6px">★★★ = finished with half the clock left</div></div>' +
+      '<div class="pcol"><h3>RANK</h3><div style="font-size:20px;font-weight:900" class="gold">' + rankFor(S.rep) + '</div>' + row('RP', S.rep) + row('Next rank', next ? rankFor(next) + ' · ' + (next - S.rep) + ' RP to go' : 'top rank') +
+      '<div class="pbar"><div style="width:' + (next ? S.rep / next * 100 : 100) + '%"></div></div><h3 style="margin-top:12px">CAREER</h3>' +
+      row('Cash earned', fmt$(S.earned)) + row('Cars taken', S.cars) + row('Distance driven', (S.dist / 1000).toFixed(1) + ' km') + row('Top speed', Math.round(S.topSpd * 3.6) + ' km/h') + row('Time played', playTime(S.playT)) + '</div>';
+  }
+  if (t === 'crew') tab.innerHTML = CREW.map(c => '<div class="ccard"><div class="av" style="background:' + c.color + '">' + c.letter + '</div><div style="font-size:18px;font-weight:900">' + c.name + ' <span class="dim" style="font-size:12px">· ' + c.role.toUpperCase() + '</span></div>' +
+    '<div style="margin-top:4px"><span class="kk">' + c.key + '</span> ' + c.ab + '</div><div class="dim">Cooldown ' + c.cd + 's · ' + (c.cdLeft > 0 ? '<span class="red">recharging ' + Math.ceil(c.cdLeft) + 's</span>' : '<span class="green">ready</span>') + '</div>' +
+    '<div style="margin-top:8px">' + c.bio + '</div><div style="margin-top:8px" class="' + (done > c.job ? 'green">✓ RECRUITED · job ' + (c.job + 1) : 'gold">Signs on after job ' + (c.job + 1) + ' · ' + MISSIONS[c.job].name + ' (on call till then)') + '</div></div>').join('');
+  if (t === 'controls') el('pauseKeys').innerHTML = KEYS.map(([k, v]) => '<div><b>' + k + '</b> ' + v + '</div>').join('');
+  if (t === 'save') tab.innerHTML = '<div class="pcol"><h3>SAVE SLOTS · PLAYING SLOT ' + S.slot + '</h3>' + [1, 2, 3].map(n => {
+    const has = !!readSlot(n), b = (a, l) => '<button data-act="' + a + '" data-n="' + n + '"' + (a !== 'save' && !has ? ' disabled' : '') + '>' + l + '</button>';
+    return '<div class="slot' + (has ? '' : ' empty') + '" style="display:flex;justify-content:space-between;align-items:center;cursor:default"><div>' + slotHTML(n) + '</div><div class="sbtns">' + b('save', 'SAVE') + b('load', 'LOAD') + b('erase', 'ERASE') + '</div></div>';
+  }).join('') + '<div class="dim">Finishing a job autosaves to the slot you are playing. LOAD restarts that slot\'s current job. LOAD, ERASE and saving over another slot ask you to click twice.</div></div>';
+}
+el('tab-save').onclick = e => {
+  const b = e.target.closest('button'); if (!b || b.disabled) return;
+  const n = +b.dataset.n, act = b.dataset.act;
+  if ((act !== 'save' || (readSlot(n) && n !== S.slot)) && b.dataset.arm !== '1') { b.dataset.arm = '1'; b.textContent = 'SURE?'; return; }
+  if (act === 'load') { togglePause(false); loadGame(n); startGame(); return; }
+  if (act === 'save') saveGame(n);
+  if (act === 'erase') { localStorage.removeItem(slotKey(n)); toast('🗑 Slot ' + n + ' erased'); }
+  pauseTab('save');
+};
 el('victoryBtn').addEventListener('click', () => {
   el('victory').classList.remove('on');
   S.victory = false; S.freeRoam = true; S.missionActive = false;

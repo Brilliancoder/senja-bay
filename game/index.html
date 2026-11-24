@@ -60,7 +60,7 @@
   .bar > div { height: 100%; }
   .barlbl { font-size: 12px; font-weight: 700; letter-spacing: 1px; color: #e8eaf2; text-shadow: 0 1px 4px #000; margin-top: 4px; }
   /* ---- bottom center: dialogue ---- */
-  #dlg { bottom: 12px; left: 50%; transform: translateX(-50%); width: 460px; min-height: 58px; display: flex; gap: 10px; align-items: flex-start; }
+  #dlg { bottom: 28px; left: 50%; transform: translateX(-50%); width: 460px; min-height: 58px; display: flex; gap: 10px; align-items: flex-start; }
   #dlg .face { width: 44px; height: 44px; border-radius: 10px; background: linear-gradient(135deg,#7a5cff,#3d8bff); display: flex; align-items: center; justify-content: center; font-size: 24px; flex: none; }
   #dlg .dt { font-weight: 800; color: #ffd94a; }
   /* ---- bottom right: speed / car ---- */
@@ -70,7 +70,7 @@
   #speedo .carname { font-size: 15px; font-weight: 800; color: #4be07a; text-shadow: 0 2px 6px #000; }
   #speedo .cbar { width: 210px; height: 8px; background: rgba(20,20,40,.85); border: 1px solid rgba(255,255,255,.25); border-radius: 5px; margin: 3px 0 3px auto; overflow: hidden; }
   #speedo .cbar > div { height: 100%; }
-  #prompt { position: fixed; z-index: 20; left: 50%; bottom: 96px; transform: translateX(-50%); background: rgba(12,12,28,.88); border: 1px solid #f5c542; border-radius: 9px; color: #fff; font-weight: 800; padding: 6px 14px; font-size: 14px; display: none; }
+  #prompt { position: fixed; z-index: 20; left: 50%; bottom: 112px; transform: translateX(-50%); background: rgba(12,12,28,.88); border: 1px solid #f5c542; border-radius: 9px; color: #fff; font-weight: 800; padding: 6px 14px; font-size: 14px; display: none; }
   #prompt b { color: #ffd94a; }
   #reticle { position: fixed; z-index: 20; left: 50%; top: 46%; width: 22px; height: 22px; margin: -11px; border: 2px solid rgba(255,255,255,.85); border-radius: 50%; box-shadow: 0 0 4px #000; display: none; pointer-events: none; }
   #reticle::after { content: ''; position: absolute; left: 8px; top: 8px; width: 2px; height: 2px; background: #ff5a5a; }
@@ -83,13 +83,39 @@
   /* ---- overlays ---- */
   .overlay { position: fixed; inset: 0; z-index: 50; display: none; align-items: center; justify-content: center; }
   .overlay.on { display: flex; }
-  #start { background: linear-gradient(180deg, rgba(10,10,26,.55), rgba(10,10,26,.88)); flex-direction: column; text-align: center; color: #fff; }
-  #start .t1 { font-size: 64px; font-weight: 900; letter-spacing: 10px; color: #ffd94a; text-shadow: 0 4px 24px rgba(255,150,40,.55); }
-  #start .t2 { font-size: 16px; letter-spacing: 6px; color: #cfd2e0; margin-top: 2px; }
-  #start .intro { max-width: 620px; margin: 18px auto 0; font-size: 14.5px; line-height: 1.55; color: #e8eaf2; background: rgba(12,12,28,.7); border: 1px solid rgba(245,197,66,.5); border-radius: 12px; padding: 12px 16px; text-align: left; }
-  #startBtn { margin-top: 22px; font-size: 20px; font-weight: 900; letter-spacing: 2px; color: #141428; background: linear-gradient(180deg,#ffe066,#f5a623); border: none; border-radius: 12px; padding: 14px 42px; cursor: pointer; box-shadow: 0 6px 24px rgba(245,166,35,.5); }
-  #startBtn:hover { filter: brightness(1.08); }
-  #start .keys { margin-top: 16px; font-size: 12px; color: #9aa0b5; line-height: 1.7; }
+  /* ---- title menu ---- */
+  #start { background: linear-gradient(90deg, rgba(8,8,22,.93) 0%, rgba(10,10,26,.7) 55%, rgba(10,10,26,.86) 100%); flex-direction: column; color: #fff; padding: 26px 40px 12px; justify-content: space-between; }
+  #start .tm { display: flex; gap: 40px; width: 100%; max-width: 1180px; flex: 1; align-items: center; justify-content: space-between; }
+  #start .tmL { width: 620px; }
+  #start .t1 { font-size: 64px; font-weight: 900; letter-spacing: 12px; color: #ffd94a; text-shadow: 0 4px 24px rgba(255,150,40,.55); line-height: 1; }
+  #start .t2 { font-size: 14px; letter-spacing: 4px; color: #cfd2e0; margin-top: 8px; white-space: nowrap; }
+  #start .intro { margin-top: 16px; font-size: 14px; line-height: 1.55; color: #e8eaf2; background: rgba(12,12,28,.7); border-left: 3px solid #f5c542; padding: 10px 14px; }
+  .tmBtns { display: flex; flex-direction: column; gap: 7px; margin-top: 16px; width: 330px; }
+  .tmBtns button { text-align: left; font-size: 18px; font-weight: 900; letter-spacing: 3px; color: #fff; background: rgba(20,20,40,.85); border: 1px solid rgba(245,197,66,.45); border-left: 4px solid #f5c542; border-radius: 6px; padding: 8px 16px; cursor: pointer; }
+  .tmBtns button:hover, .tmBtns button.on { background: linear-gradient(90deg,#ffe066,#f5a623); color: #141428; }
+  .tmBtns button:disabled { opacity: .4; cursor: default; background: rgba(20,20,40,.85); color: #fff; }
+  .tmBtns button small { display: block; font-size: 11px; letter-spacing: 1px; font-weight: 700; opacity: .8; margin-top: 2px; }
+  #tmHint { margin-top: 10px; font-size: 13px; font-weight: 700; color: #ffd94a; min-height: 18px; }
+  .tmset { display: none; margin-top: 16px; background: rgba(12,12,28,.85); border: 1px solid rgba(245,197,66,.5); border-radius: 10px; padding: 10px 14px; font-size: 13px; }
+  .tmset .row { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; border-top: 1px solid rgba(255,255,255,.08); }
+  .tmset .row:first-child { border-top: none; }
+  .tgl { min-width: 70px; font-weight: 900; font-size: 12px; letter-spacing: 1px; border-radius: 6px; border: 1px solid #f5c542; padding: 4px 10px; cursor: pointer; background: #1a1a30; color: #9aa0b5; }
+  .tgl.on { background: #f5c542; color: #141428; }
+  #start .tmR { width: 400px; }
+  .sh2 { font-size: 13px; font-weight: 900; letter-spacing: 3px; color: #f5c542; margin-bottom: 8px; }
+  .slot { background: rgba(12,12,28,.86); border: 1px solid rgba(255,255,255,.18); border-radius: 10px; padding: 9px 12px; margin-bottom: 9px; font-size: 12.5px; line-height: 1.5; color: #cfd2e0; cursor: pointer; }
+  .slot:hover, .pick .slot { border-color: #f5c542; }
+  .slot .sn { font-size: 15px; font-weight: 900; color: #fff; letter-spacing: 1px; }
+  .slot .sn span { float: right; color: #4be07a; }
+  .slot.empty { color: #6d7290; font-weight: 800; letter-spacing: 2px; }
+  #start .keys { font-size: 12px; color: #cfd2e0; line-height: 1.7; text-align: center; letter-spacing: .5px; }
+  #start .keys b { color: #ffd94a; }
+  #start .foot { font-size: 11px; color: #7f84a0; text-align: center; margin-top: 3px; }
+  /* ---- persistent controls bar ---- */
+  #ctrlbar { position: fixed; z-index: 11; bottom: 3px; left: 50%; transform: translateX(-50%); white-space: nowrap; font-size: 11px; font-weight: 700; letter-spacing: .4px; color: #e8eaf2; background: rgba(8,8,20,.72); border: 1px solid rgba(245,197,66,.35); border-radius: 7px; padding: 2px 10px; pointer-events: none; }
+  #ctrlbar b { color: #ffd94a; }
+  body:has(#start.on) #ctrlbar, body:has(#intro.on) #ctrlbar { display: none; }
+  body:has(#start.on) :is(.panel, #wanted, #money, #weapons, #crew, #mmwrap, #speedo, #prompt, #toasts, #floaters, #jobcard, #reticle) { display: none !important; } /* the title menu sits over the city flyover, not the HUD */
   #intro { background: #000; z-index: 60; flex-direction: column; }
   #intro .barT, #intro .barB { position: absolute; left: 0; right: 0; height: 13vh; background: #000; }
   #intro .barT { top: 0; } #intro .barB { bottom: 0; }
@@ -106,11 +132,35 @@
   #busted .bt { font-size: 58px; font-weight: 900; color: #ff5a5a; letter-spacing: 10px; text-shadow: 0 4px 24px rgba(255,60,60,.6); }
   #busted .bs { font-size: 15px; color: #ffd2d2; margin-top: 8px; }
   #busted.dead { background: radial-gradient(ellipse at center, rgba(60,40,20,.65), rgba(8,6,4,.94)); } #busted.dead .bt { color: #ffb14d; }
-  #pause { background: rgba(6,6,18,.82); flex-direction: column; gap: 10px; color: #fff; text-align: center; z-index: 58; }
-  #pause .pt { font-size: 46px; font-weight: 900; letter-spacing: 10px; color: #ffd94a; margin-bottom: 8px; }
-  #pause button { width: 280px; font-size: 16px; font-weight: 800; padding: 11px; border-radius: 10px; border: 1px solid #f5c542; cursor: pointer; background: #1a1a30; color: #fff; }
-  #pause button:hover { background: #f5c542; color: #141428; }
-  #pause .keys { display: none; max-width: 640px; font-size: 13px; line-height: 1.7; color: #cfd2e0; margin-top: 8px; }
+  /* ---- pause menu ---- */
+  #pause { background: rgba(6,6,18,.84); color: #fff; z-index: 58; }
+  .pbox { width: 1000px; max-width: 98vw; background: rgba(12,12,28,.94); border: 1px solid #f5c542; border-radius: 14px; padding: 14px 20px; box-shadow: 0 10px 40px rgba(0,0,0,.6); }
+  .phead { display: flex; align-items: flex-end; justify-content: space-between; border-bottom: 1px solid rgba(245,197,66,.4); padding-bottom: 8px; }
+  #pause .pt { font-size: 30px; font-weight: 900; letter-spacing: 8px; color: #ffd94a; line-height: 1; }
+  #pause .pt small { display: block; font-size: 11px; letter-spacing: 3px; color: #9aa0b5; margin-top: 4px; }
+  .ptabs { display: flex; gap: 4px; }
+  .ptabs button { font-size: 13px; font-weight: 900; letter-spacing: 2px; padding: 7px 14px; border-radius: 6px 6px 0 0; border: 1px solid rgba(245,197,66,.4); border-bottom: none; cursor: pointer; background: #1a1a30; color: #cfd2e0; }
+  .ptabs button.on { background: #f5c542; color: #141428; }
+  .pbody { height: 456px; padding-top: 12px; overflow: auto; font-size: 13px; }
+  .ptab { display: none; } .ptab.on { display: flex; gap: 18px; }
+  #bigmap { border: 2px solid #f5c542; border-radius: 10px; background: #0c1226; cursor: crosshair; flex: none; }
+  .plegend { font-size: 12.5px; line-height: 1.9; color: #cfd2e0; }
+  .plegend i { display: inline-block; width: 11px; height: 11px; border-radius: 50%; margin-right: 7px; vertical-align: -1px; }
+  .pcol { flex: 1; min-width: 0; }
+  .pcol h3 { font-size: 12px; letter-spacing: 3px; color: #f5c542; margin: 0 0 6px; }
+  .srow { display: flex; justify-content: space-between; gap: 10px; padding: 3px 0; border-top: 1px solid rgba(255,255,255,.07); }
+  .pbar { height: 6px; background: #2a2a44; border-radius: 3px; overflow: hidden; margin: 2px 0 6px; } .pbar > div { height: 100%; background: linear-gradient(90deg,#f5c542,#4be07a); }
+  .pct { font-size: 40px; font-weight: 900; color: #4be07a; line-height: 1; }
+  .ccard { flex: 1; background: rgba(20,20,40,.85); border: 1px solid rgba(255,255,255,.15); border-radius: 10px; padding: 12px; line-height: 1.55; }
+  .ccard .av { width: 52px; height: 52px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 28px; margin-bottom: 8px; }
+  .ccard .kk { display: inline-block; background: #f5c542; color: #141428; font-weight: 900; border-radius: 5px; padding: 0 7px; }
+  #pauseKeys { columns: 2; column-gap: 30px; font-size: 13px; line-height: 1.85; color: #cfd2e0; width: 100%; }
+  #pauseKeys b { color: #ffd94a; display: inline-block; min-width: 110px; }
+  .sbtns button { font-size: 12px; font-weight: 900; letter-spacing: 1px; padding: 6px 12px; margin-left: 6px; border-radius: 6px; border: 1px solid #f5c542; cursor: pointer; background: #1a1a30; color: #fff; }
+  .sbtns button:hover { background: #f5c542; color: #141428; } .sbtns button:disabled { opacity: .35; cursor: default; background: #1a1a30; color: #fff; }
+  .pbtns { display: flex; gap: 10px; justify-content: center; border-top: 1px solid rgba(245,197,66,.4); padding-top: 10px; margin-top: 8px; }
+  .pbtns button { width: 200px; font-size: 14px; font-weight: 800; padding: 9px; border-radius: 8px; border: 1px solid #f5c542; cursor: pointer; background: #1a1a30; color: #fff; }
+  .pbtns button:hover { background: #f5c542; color: #141428; }
   #jobcard { position: fixed; inset: 0; z-index: 40; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; opacity: 0; transition: opacity .45s; text-align: center; }
   #jobcard.on { opacity: 1; }
   #jobcard .jc-act { font-size: 13px; font-weight: 800; letter-spacing: 5px; color: #f5c542; text-shadow: 0 2px 8px #000; }
@@ -132,11 +182,6 @@
   #phone .ph { font-weight: 900; letter-spacing: 1px; color: #5fd6ff; font-size: 13px; margin-bottom: 6px; }
   #phone .pm { padding: 6px 0; border-top: 1px solid rgba(255,255,255,.09); font-size: 12.5px; line-height: 1.45; }
   #phone .pm b { color: #ffd94a; }
-  /* ---- big map ---- */
-  #mapov { background: rgba(5,5,16,.92); z-index: 48; flex-direction: column; }
-  #bigmap { border: 2px solid #f5c542; border-radius: 14px; background: #0c1226; }
-  #mapov .mh { color: #ffd94a; font-weight: 900; letter-spacing: 3px; margin-bottom: 10px; font-size: 16px; }
-  #mapov .mf { color: #9aa0b5; margin-top: 10px; font-size: 12px; }
   /* ---- touch ---- */
   #touch { position: fixed; inset: 0; z-index: 30; display: none; pointer-events: none; }
   #touch.on { display: block; }
@@ -151,7 +196,7 @@
   #btnShop { right: 190px; bottom: 160px; width: 46px; height: 46px; }
   @media (max-width: 760px) {
     #job { width: calc(100vw - 130px); font-size: 12px; }
-    #dispatch, #crew, #weather, #rank, #air { display: none !important; }
+    #dispatch, #crew, #weather, #rank, #air, #ctrlbar { display: none !important; }
     #weapons { top: 12px; right: 12px; } .wslot { width: 46px; font-size: 10px; }
     #mmwrap { left: 88px; bottom: 210px; } #minimap { width: 104px !important; height: 104px !important; }
     #dlg { width: calc(100vw - 24px); bottom: 210px; }
@@ -178,14 +223,25 @@
 <div id="reticle"></div>
 <div id="toasts"></div>
 <div id="floaters"></div>
-<div id="shop" class="panel"><div class="sh">🔧 BARA'S GARAGE — SHOP</div><div class="cash2">YOUR CASH <span id="shopCash">$1,500</span></div><div id="shopList"></div><div class="sfoot">Click an item or press 1–7 to buy · E / ESC / click outside to close · Game paused while shopping</div></div>
+<div id="shop" class="panel"><div class="sh">🔧 BARA'S GARAGE — SHOP</div><div class="cash2">YOUR CASH <span id="shopCash">$1,500</span></div><div id="shopList"></div><div class="sfoot">Click an item to buy · B / ESC to close · Game paused while shopping</div></div>
 <div id="phone" class="panel"><div class="ph">📱 SENJA PHONE — MESSAGES</div><div id="phoneList"></div><div class="small" style="margin-top:6px;color:#9aa0b5">O to close · Dara's live job text is at the top</div></div>
-<div id="mapov" class="overlay"><div class="mh">SENJA BAY — CITY MAP · M TO CLOSE</div><canvas id="bigmap" width="560" height="560"></canvas><div class="mf">Gold star = job checkpoint · Red = SJPD · Blue = you · Yellow = cash stashes</div></div>
-<div id="start" class="overlay on"><div class="t1">SENJA BAY</div><div class="t2">AN OPEN-WORLD CRIME STORY · MIRAMAR STRIP</div><div class="intro">Two years ago Raka walked out of the county jail with nothing but a busted sedan and a name to clear. Tonight, fixer Dara has one last plan: <b>eight jobs</b> across Senja Bay — from the Marina Pier to Pasar Malam — and a boat waiting at the end. The SJPD is watching every street. Your crew — Sinta, Bara and Nara — has your back. Drive fast, stay sharp, and don't get caught.</div><button id="startBtn">▶ &nbsp;START ENGINE</button><div class="keys">WASD / ARROWS drive · SHIFT nitro · V slow time · SPACE brake · F on foot / carjack · CLICK shoot · 1–5 weapons · G garage · E shop · Z / X / C crew · T day/night · R radio · M map · O phone · K save · P / ESC pause · U mute · on foot: WASD move + strafe, mouse / ←→ turn</div></div>
+<div id="start" class="overlay on">
+<div class="tm"><div class="tmL"><div class="t1">SENJA BAY</div><div class="t2">AN OPEN-WORLD CRIME STORY · MIRAMAR STRIP</div>
+<div class="intro" id="tmIntro">Two years ago Raka walked out of the county jail with nothing but a busted sedan and a name to clear. Tonight, fixer Dara has one last plan: <b>eight jobs</b> across Senja Bay — from the Marina Pier to Pasar Malam — and a boat waiting at the end. The SJPD is watching every street. Your crew — Sinta, Bara and Nara — has your back.</div>
+<div class="tmset" id="tmSettings"></div>
+<div class="tmBtns"><button id="tmCont">▶ CONTINUE<small id="tmContSub">no save yet</small></button><button id="startBtn">✚ NEW GAME<small>the story from job 1</small></button><button id="tmLoad">⇪ LOAD<small>pick one of three slots</small></button><button id="tmSet">⚙ SETTINGS<small>radio · shadows · radar · controls</small></button></div>
+<div id="tmHint"></div></div>
+<div class="tmR" id="tmR"><div class="sh2">SAVE SLOTS</div><div id="tmSlots"></div></div></div>
+<div><div class="keys"><b>WASD</b> move · <b>MOUSE</b> look · <b>E</b> enter/exit car · <b>1–5</b> weapons · <b>R</b> radio · <b>F / G / H</b> crew · <b>M</b> map · <b>ESC</b> pause · <b>SHIFT</b> sprint · <b>C</b> horn</div>
+<div class="foot">SENJA BAY is original work — city, story, characters, cars and code made from scratch for the make.fun gta6-01 bounty.</div></div></div>
 <div id="intro" class="overlay"><div class="barT"></div><div class="barB"></div><div id="introCard"><div class="ic1" id="icKicker">SENJA BAY</div><div class="ic2" id="icTitle">TWO YEARS AGO — Raka walks free</div><div class="ic3" id="icBody">The gate clangs shut behind him. No money. No crew. Just a name the whole city still whispers.</div></div><div class="skip">CLICK OR PRESS ENTER TO SKIP</div></div>
 <div id="victory" class="overlay"><div class="vt">★ THE BOAT ★</div><div class="vs" id="victoryTxt">Eight jobs. One last plan. Raka steps onto the boat as the city lights glow across Senja Bay — the SJPD sirens fading behind him. Dara's voice crackles over the radio: "You did it, Raka. The city is yours now."<br><br><b>FREE ROAM UNLOCKED</b> — keep driving, keep the heat on, keep Senja Bay yours.</div><button id="victoryBtn">KEEP DRIVING — FREE ROAM</button></div>
 <div id="busted" class="overlay"><div class="bt" id="bustedTitle">BUSTED</div><div class="bs" id="bustedTxt">The SJPD takes you in. Bail posted: $200.</div><button id="bustedBtn">WALK OUT — TRY AGAIN</button></div>
-<div id="pause" class="overlay"><div class="pt">PAUSED</div><button id="pResume">▶ RESUME</button><button id="pSave">💾 SAVE GAME</button><button id="pKeys">⌨ CONTROLS</button><button id="pQuit">⏏ QUIT TO TITLE</button><div class="keys" id="pauseKeys"></div></div>
+<div id="pause" class="overlay"><div class="pbox">
+<div class="phead"><div class="pt">PAUSED<small>SENJA BAY · MIRAMAR STRIP</small></div><div class="ptabs" id="ptabs"><button data-tab="map">MAP</button><button data-tab="stats">STATS</button><button data-tab="crew">CREW</button><button data-tab="controls">CONTROLS</button><button data-tab="save">SAVE</button></div></div>
+<div class="pbody"><div class="ptab" id="tab-map"><canvas id="bigmap" width="440" height="440"></canvas><div class="plegend" id="mapLegend"></div></div><div class="ptab" id="tab-stats"></div><div class="ptab" id="tab-crew"></div><div class="ptab" id="tab-controls"><div id="pauseKeys"></div></div><div class="ptab" id="tab-save"></div></div>
+<div class="pbtns"><button id="pResume">▶ RESUME</button><button id="pSave">💾 SAVE GAME</button><button id="pKeys">⌨ CONTROLS</button><button id="pQuit">⏏ QUIT TO TITLE</button></div></div></div>
+<div id="ctrlbar"><b>WASD</b> move/drive · <b>SHIFT</b> sprint/nitro · <b>SPACE</b> handbrake · <b>E</b> enter/exit · <b>MOUSE</b> look · <b>CLICK</b> fire · <b>1–5</b> weapons · <b>R</b> radio · <b>ESC</b> pause</div>
 <div id="jobcard"><div class="jc-act" id="jcAct">ACT I · SMALL JOBS</div><div class="jc-title" id="jcTitle">JOB 1/8</div><div class="jc-obj" id="jcObj"></div><div class="jc-meta" id="jcMeta"></div></div>
 <div id="touch"><div id="joy"><div id="joyKnob"></div></div><div class="tbtn" id="btnFire">FIRE</div><div class="tbtn" id="btnBrake">BRAKE</div><div class="tbtn" id="btnNitro">NITRO</div><div class="tbtn" id="btnEnter">ENTER</div><div class="tbtn" id="btnMap">MAP</div><div class="tbtn" id="btnShop">SHOP</div></div>
 <script src="src/data.js"></script>

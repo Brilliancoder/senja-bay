@@ -13,23 +13,23 @@ addEventListener('keydown', e => {
   initAudio();
   if (!S.started) { if (k === 'enter') skipIntro(); return; }
   if (el('intro').classList.contains('on')) { if (k === 'enter') skipIntro(); return; }
-  if (el('pause').classList.contains('on')) { if (k === 'p' || k === 'escape') togglePause(); return; }
+  if (el('pause').classList.contains('on')) { if (k === 'p' || k === 'escape') togglePause(); if (k === 'm') toggleMap(); return; }
+  if (shopOpen) { if (k === 'b' || k === 'escape') closeShop(); return; }
   if (k === 'p') togglePause();
-  if (k === 'f') toggleFoot();
-  if (k === 'g') garageAction();
-  if (k === 'e') shopToggle();
+  if (k === 'e') toggleFoot();
+  if (k === 'b') garageAction(); // Bara's garage: shop, or swap plates on job 5
+  if (k === 'c' && !onFoot) { sfxHorn(); setTimeout(sfxHorn, 120); }
   if (k === 't') setClock(S.night ? 17.5 : 21); // skip to dusk / night
   if (k === 'r') cycleRadio();
   if (k === 'm') toggleMap();
   if (k === 'o') togglePhone();
   if (k === 'k') saveGame();
   if (k === 'u') { S.muted = !S.muted; toast(S.muted ? '🔇 Sound muted (U to unmute)' : '🔊 Sound on'); }
-  if (k === 'z' || k === 'x' || k === 'c') useAbility(k);
+  if (k === 'f' || k === 'g' || k === 'h') useAbility(k);
   if (k === 'v') focusOn = true;
   if (k >= '1' && k <= '5') selectWeapon(parseInt(k) - 1);
   if (k === 'escape') {
-    const ui = shopOpen || el('phone').style.display === 'block' || el('mapov').classList.contains('on');
-    if (ui) { closeShop(); el('phone').style.display = 'none'; if (el('mapov').classList.contains('on')) toggleMap(); }
+    if (el('phone').style.display === 'block') el('phone').style.display = 'none';
     else togglePause();
   }
 });
@@ -50,20 +50,22 @@ addEventListener('resize', () => {
   camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
   renderer.setSize(innerWidth, innerHeight);
 });
-/* ---------- pause menu (P / Esc) ---------- */
-function togglePause(force) {
-  if (!S.started || S.busted || S.victory || shopOpen || el('mapov').classList.contains('on')) return;
+/* ---------- pause menu (P / Esc, M opens it on the map) ---------- */
+function togglePause(force, tab) {
+  if (!S.started || S.busted || S.victory || shopOpen) return;
   const on = force !== undefined ? force : !el('pause').classList.contains('on');
   el('pause').classList.toggle('on', on); S.paused = on;
-  el('pauseKeys').style.display = 'none';
+  if (on) { pauseTab(tab || 'map'); sfxClick(); }
   if (on && document.pointerLockElement) document.exitPointerLock();
 }
+el('ptabs').onclick = e => { const t = e.target.dataset.tab; if (t) pauseTab(t); };
+el('bigmap').onclick = e => setWaypoint(e);
 el('pResume').onclick = () => togglePause(false);
-el('pSave').onclick = () => saveGame();
-el('pKeys').onclick = () => { const k = el('pauseKeys'); k.innerHTML = document.querySelector('#start .keys').innerHTML; k.style.display = k.style.display === 'block' ? 'none' : 'block'; };
-el('pQuit').onclick = () => { // back to the title screen; START ENGINE re-runs the current job
+el('pSave').onclick = () => { saveGame(); pauseTab(curTab); };
+el('pKeys').onclick = () => pauseTab('controls');
+el('pQuit').onclick = () => { // back to the title menu; CONTINUE / LOAD pick the run back up
   togglePause(false); S.started = false; S.missionActive = false; S.wanted = 0; speed = 0;
-  el('jobcard').classList.remove('on'); el('start').classList.add('on');
+  el('jobcard').classList.remove('on'); showTitle();
 };
 /* ---------- camera ---------- */
 function updateCamera(dt) {
@@ -222,7 +224,7 @@ function setupTouch() {
   bindBtn('btnNitro', 'shift', null);
   bindBtn('btnEnter', null, () => toggleFoot());
   bindBtn('btnMap', null, () => toggleMap());
-  bindBtn('btnShop', null, () => shopToggle());
+  bindBtn('btnShop', null, () => shopOpen ? closeShop() : garageAction());
   const joy = el('joy'), knob = el('joyKnob');
   let joyId = null;
   const setJoy = e => {
@@ -246,7 +248,7 @@ function setupTouch() {
   joy.addEventListener('touchcancel', endJoy);
 }
 /* ---------- main loop ---------- */
-let lastT = performance.now();
+let lastT = performance.now(), seenMoney = 0; // seenMoney: earnings = every rise in cash; reset on load/new game
 function animate() {
   requestAnimationFrame(animate);
   const now = performance.now();
@@ -272,6 +274,10 @@ function animate() {
     updateClock(dt);
     updateContact();
     updateFlow(dt);
+    S.playT += dt; // career stats
+    if (!onFoot) { S.dist += Math.abs(speed) * effDt; S.topSpd = Math.max(S.topSpd, Math.abs(speed)); }
+    if (S.money > seenMoney) S.earned += S.money - seenMoney;
+    seenMoney = S.money;
     rainNext -= dt;
     if (rainNext <= 0 && !rainOn) { rainOn = true; rainT = 45; if (rain) rain.visible = true; toast('🌧 Rain rolling in over Senja Bay'); rainNext = 200 + Math.random() * 120; }
     if (rainOn) { rainT -= dt; updateRain(dt); if (rainT <= 0) { rainOn = false; if (rain) rain.visible = false; toast('🌤 Rain clearing — the sun is back'); } }
@@ -289,7 +295,6 @@ function animate() {
   updateCamera(dt);
   updateHUD();
   drawMinimap();
-  if (el('mapov').classList.contains('on')) drawBigMap();
   renderer.render(scene, camera);
 }
 function buildRain() {
@@ -335,7 +340,8 @@ gator.position.set(82, 0, -149); // lurks on the waterline east of Marina Pier
 gator.userData.biteT = 0;
 scene.add(gator);
 applyTimeOfDay('golden');
-loadGame();
+loadGame(); seenMoney = S.money;
+applySettings();
 if (PAINTS[S.paint] && paintMat) paintMat.color.setHex(PAINTS[S.paint]);
 el('shop').style.display = 'none';
 el('phone').style.display = 'none';

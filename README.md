@@ -96,22 +96,24 @@ moored off the end of Marina Pier.
 | --- | --- |
 | W A S D / arrows | Drive / walk (A/D strafe on foot) |
 | Mouse / ← → | Turn on foot |
-| Shift | Nitro |
+| Shift | Nitro in the car, sprint on foot |
 | V (hold) | Focus: slow time |
 | Space | Brake / handbrake |
-| F | Exit car / enter or steal a car |
+| E | Exit car / enter or steal a car |
 | Mouse click | Shoot |
 | 1–5 | Switch weapon |
-| G | Enter garage (near it) |
-| E | Open shop (near garage) |
-| Z / X / C | Crew abilities |
+| F / G / H | Crew: Sinta / Bara / Nara |
+| B | Bara's garage: shop, or swap plates on job 5 (near the garage) |
+| C | Horn |
 | T | Day / night |
 | R | Radio |
-| M | Big map |
+| M | Pause menu on the city map (click to set a waypoint) |
 | O | Phone |
-| P / Esc | Pause |
-| K | Save |
+| P / Esc | Pause menu: MAP · STATS · CREW · CONTROLS · SAVE |
+| K | Save to the current slot |
 | U | Mute |
+
+The title menu has CONTINUE, NEW GAME, LOAD (three save slots) and SETTINGS (radio, shadows, radar, controls). A controls bar along the bottom of the screen shows the main keys during play.
 
 Touch: on-screen joystick, FIRE, BRAKE, NITRO, ENTER, MAP, SHOP.
 

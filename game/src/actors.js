@@ -185,7 +185,7 @@ function updateWalker(dt) {
   const ml = Math.hypot(mx, mz);
   if (ml > 0.01) {
     mx /= ml; mz /= ml;
-    const sp = 7.5;
+    const sp = keys['shift'] ? 11.5 : 7.5; // SHIFT sprints on foot (nitro in the car)
     const res = resolveAABB(wx + mx * sp * dt, wz + mz * sp * dt, 0.8);
     wx = res.x; wz = res.z;
   }

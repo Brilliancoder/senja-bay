@@ -47,7 +47,8 @@ function jobStatus(m) {
   if (i === 1) return ['Hidden ' + Math.floor(S.hidden) + 's / 15s', S.wanted ? 'Shake the hunters — break line of sight' : next, S.hidden / 15];
   if (i === 6) return ['Wave ' + Math.min(3, (S.wave || 0) + 1) + '/3 · ' + police.filter(c => c.userData.active && c.userData.hp > 0).length + ' units left', atPier() ? next : 'Get to Marina Pier', (S.wave || 0) / 3];
   if (i === 3 && race && !race.side) return ['P' + racePlace() + '/' + (race.rivals.length + 1) + ' · ' + next, next, base];
-  return [next, next, base];
+  const t = m.cps[Math.min(S.stage, m.cps.length - 1)].txt || next;
+  return [t, t, base];
 }
 /* ---------- races: job 4 (two crews) and the free-roam side race (one rival) ---------- */
 function startRace(cps, n, side) {
@@ -102,7 +103,7 @@ function startSide() {
 }
 function sideEnd(won, why) {
   endRace(); sideCd = 20;
-  if (won) { S.money += SIDE.pay; floatText('RACE WON · +$' + SIDE.pay, '#4be07a'); toast('🏆 SUNSET SPRINT won · +$' + SIDE.pay + ' · the blip is back in 20s'); say('Sinta', 'Ha! They\'ll be telling that one at the market all week.'); }
+  if (won) { S.money += SIDE.pay; S.races++; floatText('RACE WON · +$' + SIDE.pay, '#4be07a'); toast('🏆 SUNSET SPRINT won · +$' + SIDE.pay + ' · the blip is back in 20s'); say('Sinta', 'Ha! They\'ll be telling that one at the market all week.'); }
   else toast('🏁 Race lost — ' + why + '. The R blip is back in 20s', 4000);
   if (S.offer >= 0) { const c = contactOf(S.offer); moveMarker({ x: c[0], z: c[1] }); } else cpMarker.visible = false;
 }
@@ -137,10 +138,10 @@ function updateWaves(dt) {
 }
 /* ---------- Dara on the line: job start, halfway, and when it gets dangerous ---------- */
 function jobLines() {
-  const m = MISSIONS[S.mission], L = DARA_LINES[S.mission], cp = currentCheckpoint(), [x, z] = here();
+  const m = MISSIONS[S.mission], L = DARA_LINES[S.mission], foot = m.cps[0].foot, cp = foot ? m.cps[m.cps.length - 1] : currentCheckpoint(), [x, z] = here(); // job 1's on-foot step doesn't count as "halfway"
   const dd = cp ? d2(x, z, cp.x, cp.z) : 0;
   if (!jobF.s) { if (S.missionElapsed > 4) { jobF.s = 1; jobF.d0 = Math.max(dd, 1); say('Dara', L[0]); } return; }
-  const prog = S.mission === 1 ? S.hidden / 15 : S.mission === 6 ? S.wave / 3 : m.cps.length > 1 ? S.stage / m.cps.length : 1 - dd / jobF.d0;
+  const prog = S.mission === 1 ? S.hidden / 15 : S.mission === 6 ? S.wave / 3 : m.cps.length > 1 && !foot ? S.stage / m.cps.length : 1 - dd / jobF.d0;
   if (!jobF.m && (prog >= 0.5 || S.missionElapsed > m.time / 2)) { jobF.m = 1; say('Dara', L[1]); }
   const why = S.health < 40 ? 0 : S.missionTimer < 20 ? 2 : S.condition < 30 && !onFoot ? 3 : S.wanted >= 4 ? 1 : -1;
   if (why >= 0 && S.missionElapsed - (jobF.dz ?? -99) > 25 && S.missionElapsed > 8) { jobF.dz = S.missionElapsed; say('Dara', DARA_DANGER[why]); }

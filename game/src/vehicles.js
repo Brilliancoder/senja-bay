@@ -360,6 +360,20 @@ function enterTarget() {
   for (const t of traffic) { const dd = d2(wx, wz, t.position.x, t.position.z); if (dd < bd) { bd = dd; best = t; } }
   return best && { car: best, steal: true };
 }
+// first time on foot: park the nearest street car 12 m up the nearest road and drop cash beside Raka, so carjack + cash are right there
+function footIntro() {
+  if (traffic.length) {
+    const near = (a, v) => a.reduce((b, r) => Math.abs(r - v) < Math.abs(b - v) ? r : b);
+    const rv = near(V_ROADS, wx), rh = near(H_ROADS, wz), vertical = Math.abs(wx - rv) < Math.abs(wz - rh);
+    const car = traffic.reduce((b, t) => d2(t.position.x, t.position.z, wx, wz) < d2(b.position.x, b.position.z, wx, wz) ? t : b);
+    placeOnRoad(car, vertical, vertical ? rv : rh, 1, (vertical ? wz : wx) + 12);
+    car.userData.speed = 0; // shortcut: it stays parked until stolen; fine for a one-off teaching car
+  }
+  if (!cashStashes.some(c => !c.taken && d2(c.x, c.z, wx, wz) < 20)) {
+    const p = resolveAABB(wx + Math.sin(wHeading + Math.PI / 2) * 3, wz + Math.cos(wHeading + Math.PI / 2) * 3, 1);
+    cashAt(p.x, p.z);
+  }
+}
 function toggleFoot() {
   if (S.busted || S.victory) return;
   if (!onFoot) {
@@ -367,11 +381,12 @@ function toggleFoot() {
     wx = px + Math.sin(heading + Math.PI / 2) * 3; wz = pz + Math.cos(heading + Math.PI / 2) * 3;
     wHeading = heading;
     walker.visible = true;
-    toast('🚶 On foot — WASD move/strafe · mouse or ←→ turn · click shoot · F back in');
+    toast('🚶 On foot — WASD move/strafe · mouse or ←→ turn · click shoot · SHIFT sprint · E back in');
+    if (!S.footIntro) { S.footIntro = true; footIntro(); }
   } else {
     // carjack the nearest street car (within 7 m), else climb back into your own / a parked one
     const tg = enterTarget();
-    if (!tg) { toast('Nothing to drive here — walk up to a car ([F] within 7 m).'); return; }
+    if (!tg) { toast('Nothing to drive here — walk up to a car ([E] within 7 m).'); return; }
     const car = tg.car;
     if (tg.steal) {
       traffic.splice(traffic.indexOf(car), 1);
@@ -384,12 +399,12 @@ function toggleFoot() {
       d.rotation.set(0, 0, 0); d.visible = true;
       d.position.set(car.position.x + (u.vertical ? side * 1.6 : 0), 0, car.position.z + (u.vertical ? 0 : side * 1.6));
       floatText('STOLEN · ' + u.model, '#ffd94a');
-      addWanted(1);
+      addWanted(1); S.cars++;
     }
     driveCar(car);
     px = car.position.x; pz = car.position.z; heading = car.rotation.y;
     toast(tg.steal ? '🚗 STOLEN · ' + car.userData.model + ' — the driver legged it' : '🚗 Back in the ' + carName());
-    onFoot = false; walker.visible = false; speed = 0;
+    onFoot = false; walker.visible = false; speed = 0; S.drove = true; // hides the on-foot controls hint
     if (document.pointerLockElement) document.exitPointerLock();
   }
   sfxClick();
